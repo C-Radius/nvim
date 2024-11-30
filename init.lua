@@ -49,6 +49,20 @@ require("packer").startup(function(use)
     use("nvim-lua/plenary.nvim")
     use({ "nvim-telescope/telescope.nvim", tag = "0.1.8" })
     use("kylechui/nvim-surround")
+    use("windwp/nvim-autopairs")
+    use {
+            'nvim-tree/nvim-tree.lua',
+            requires = { 'nvim-tree/nvim-web-devicons' },
+            config = function()
+                -- Configure nvim-tree after it's loaded
+                require("nvim-tree").setup {
+                    view = {
+                        side = "left",
+                        width = 30,
+                    },
+                }
+            end
+        }
     use({
         "coffebar/neovim-project",
         config = function()
@@ -179,3 +193,161 @@ if vim.g.neovide then
     vim.opt.guifont = "FiraCode Nerd Font:h11"
 end
 
+vim.api.nvim_set_keymap(
+    "i",
+    "<C-CR>",
+    [[coc#pum#visible() ? coc#pum#confirm() : "\<C-CR>"]],
+    { noremap = true, silent = true, expr = true }
+)
+
+-- Optional: Use <Tab> and <S-Tab> for navigating suggestions
+vim.api.nvim_set_keymap(
+    "i",
+    "<Tab>",
+    [[coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"]],
+    { noremap = true, silent = true, expr = true }
+)
+vim.api.nvim_set_keymap(
+    "i",
+    "<S-Tab>",
+    [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]],
+    { noremap = true, silent = true, expr = true }
+)
+
+
+
+local remap = vim.api.nvim_set_keymap
+local npairs = require('nvim-autopairs')
+
+npairs.setup({ map_bs = false, map_cr = false })
+
+vim.g.coq_settings = { keymap = { recommended = false } }
+
+-- skip it, if you use another global object
+_G.MUtils= {}
+
+MUtils.CR = function()
+  if vim.fn.pumvisible() ~= 0 then
+    if vim.fn.complete_info({ 'selected' }).selected ~= -1 then
+      return npairs.esc('<c-y>')
+    else
+      return npairs.esc('<c-e>') .. npairs.autopairs_cr()
+    end
+  else
+    return npairs.autopairs_cr()
+  end
+end
+remap('i', '<cr>', 'v:lua.MUtils.CR()', { expr = true, noremap = true })
+
+MUtils.BS = function()
+  if vim.fn.pumvisible() ~= 0 and vim.fn.complete_info({ 'mode' }).mode == 'eval' then
+    return npairs.esc('<c-e>') .. npairs.autopairs_bs()
+  else
+    return npairs.autopairs_bs()
+  end
+end
+remap('i', '<bs>', 'v:lua.MUtils.BS()', { expr = true, noremap = true })
+
+
+
+vim.api.nvim_set_keymap("n", "<leader>r", ":RunPython<CR>", { noremap = true, silent = true })
+
+-- Function to detect and activate a Python virtual environment for running code
+local function detect_project_venv()
+    local function find_venv(start_dir)
+        local path_sep = package.config:sub(1, 1) -- Path separator ('/' or '\')
+        local dir = start_dir
+
+        while dir do
+            local venv_dirs = {
+                dir .. path_sep .. "venv",
+                dir .. path_sep .. ".venv",
+                dir .. path_sep .. "env"
+            }
+
+            for _, venv in ipairs(venv_dirs) do
+                local python_exec = venv .. path_sep .. "Scripts" .. path_sep .. "python.exe" -- Windows
+                if vim.fn.has("win32") == 0 then
+                    python_exec = venv .. path_sep .. "bin" .. path_sep .. "python"
+                end
+
+                if vim.fn.executable(python_exec) == 1 then
+                    return python_exec
+                end
+            end
+
+            -- Move up to the parent directory
+            local parent_dir = vim.fn.fnamemodify(dir, ":h")
+            if parent_dir == dir then
+                break
+            end
+            dir = parent_dir
+        end
+        return nil
+    end
+
+    -- Get the directory of the file opened in Neovide or fallback to cwd
+    local file_dir = vim.fn.expand("%:p:h")
+    if vim.fn.empty(file_dir) == 1 then
+        file_dir = vim.loop.cwd()
+    end
+
+    -- Find and return the virtual environment Python path
+    return find_venv(file_dir)
+end
+
+-- Set up the virtual environment for running code
+local project_venv = detect_project_venv()
+if project_venv then
+    vim.g.project_python = project_venv
+    print("Project virtual environment detected: " .. project_venv)
+else
+    vim.g.project_python = "python" -- Fallback to system Python
+    print("No project virtual environment found. Using system Python.")
+end
+
+-- Define a command to run Python files using the detected virtual environment
+vim.api.nvim_create_user_command("RunPython", function()
+    local python = vim.g.project_python
+    local file = vim.fn.expand("%:p") -- Current file's full path
+    vim.cmd("!" .. python .. " " .. file)
+end, {})
+
+
+--Open terminal with vim at all times.
+
+-- Open a terminal in a vertical split taking up 30% of the left side
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        vim.cmd("leftabove vsplit") -- Open the vertical split on the left
+        vim.cmd("vertical resize " .. math.floor(vim.o.columns * 0.25)) -- Resize to 30% width
+        vim.cmd("terminal") -- Open a terminal in the split
+        vim.cmd("wincmd l") -- Move the cursor to the right split
+    end,
+})
+
+
+-- Load nvim-tree and configure it to open on the right side with 25% width
+require("nvim-tree").setup {
+    view = {
+        side = "right", -- Always open the tree on the right
+        width = 25,    -- Set the width to 25 columns
+    },
+}
+
+-- Automatically open nvim-tree when Neovim starts
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        require("nvim-tree.api").tree.open()
+    end,
+})
+
+-- Keybinding to toggle nvim-tree (ensures it respects the "right side" configuration)
+vim.keymap.set('n', '<C-n>', function()
+    local api = require("nvim-tree.api")
+    if api.tree.is_visible() then
+        api.tree.close()
+    else
+        api.tree.open()
+    end
+end, { noremap = true, silent = true })
