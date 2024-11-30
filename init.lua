@@ -6,7 +6,7 @@
 --  \____|    |_| \_\__,_|\__,_|_|\__,_|___/
 --
 -- Author: C-Radius
--- Last Mod: 22/05/2020
+-- Last Mod: 30/11/2024
 
 -- Check for packer.nvim and install if missing
 local ensure_packer = function()
