@@ -87,8 +87,9 @@ require("packer").startup(function(use)
             { "ibhagwan/fzf-lua" },
             { "Shatur/neovim-session-manager" },
         }
-    })    if packer_bootstrap then
-    require("packer").sync()
+    })
+    if packer_bootstrap then
+        require("packer").sync()
 end
 end)
 
@@ -313,34 +314,6 @@ vim.api.nvim_create_user_command("RunPython", function()
     vim.cmd("!" .. python .. " " .. file)
 end, {})
 
-
---Open terminal with vim at all times.
-
--- Open a terminal in a vertical split taking up 30% of the left side
-vim.api.nvim_create_autocmd("VimEnter", {
-    callback = function()
-        vim.cmd("leftabove vsplit") -- Open the vertical split on the left
-        vim.cmd("vertical resize " .. math.floor(vim.o.columns * 0.25)) -- Resize to 30% width
-        vim.cmd("terminal") -- Open a terminal in the split
-        vim.cmd("wincmd l") -- Move the cursor to the right split
-    end,
-})
-
-
--- Load nvim-tree and configure it to open on the right side with 25% width
-require("nvim-tree").setup {
-    view = {
-        side = "right", -- Always open the tree on the right
-        width = 25,    -- Set the width to 25 columns
-    },
-}
-
--- Automatically open nvim-tree when Neovim starts
-vim.api.nvim_create_autocmd("VimEnter", {
-    callback = function()
-        require("nvim-tree.api").tree.open()
-    end,
-})
 
 -- Keybinding to toggle nvim-tree (ensures it respects the "right side" configuration)
 vim.keymap.set('n', '<C-n>', function()
