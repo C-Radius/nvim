@@ -51,18 +51,18 @@ require("packer").startup(function(use)
     use("kylechui/nvim-surround")
     use("windwp/nvim-autopairs")
     use {
-            'nvim-tree/nvim-tree.lua',
-            requires = { 'nvim-tree/nvim-web-devicons' },
-            config = function()
-                -- Configure nvim-tree after it's loaded
-                require("nvim-tree").setup {
-                    view = {
-                        side = "left",
-                        width = 30,
-                    },
-                }
-            end
-        }
+        'nvim-tree/nvim-tree.lua',
+        requires = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            -- Configure nvim-tree after it's loaded
+            require("nvim-tree").setup {
+                view = {
+                    side = "left",
+                    width = 30,
+                },
+            }
+        end
+    }
     use({
         "coffebar/neovim-project",
         config = function()
@@ -88,9 +88,17 @@ require("packer").startup(function(use)
             { "Shatur/neovim-session-manager" },
         }
     })
+    -- Tree-sitter setup
+    use {
+        'nvim-treesitter/nvim-treesitter',
+        run = ':TSUpdate' -- Update parsers automatically
+    }
+    -- Optional Tree-sitter plugins
+    use 'nvim-treesitter/nvim-treesitter-textobjects'
+    use 'nvim-treesitter/playground'
     if packer_bootstrap then
         require("packer").sync()
-end
+    end
 end)
 
 -- Environment variables
@@ -195,24 +203,24 @@ if vim.g.neovide then
 end
 
 vim.api.nvim_set_keymap(
-    "i",
-    "<C-CR>",
-    [[coc#pum#visible() ? coc#pum#confirm() : "\<C-CR>"]],
-    { noremap = true, silent = true, expr = true }
+"i",
+"<C-CR>",
+[[coc#pum#visible() ? coc#pum#confirm() : "\<C-CR>"]],
+{ noremap = true, silent = true, expr = true }
 )
 
 -- Optional: Use <Tab> and <S-Tab> for navigating suggestions
 vim.api.nvim_set_keymap(
-    "i",
-    "<Tab>",
-    [[coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"]],
-    { noremap = true, silent = true, expr = true }
+"i",
+"<Tab>",
+[[coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"]],
+{ noremap = true, silent = true, expr = true }
 )
 vim.api.nvim_set_keymap(
-    "i",
-    "<S-Tab>",
-    [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]],
-    { noremap = true, silent = true, expr = true }
+"i",
+"<S-Tab>",
+[[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]],
+{ noremap = true, silent = true, expr = true }
 )
 
 
@@ -228,24 +236,24 @@ vim.g.coq_settings = { keymap = { recommended = false } }
 _G.MUtils= {}
 
 MUtils.CR = function()
-  if vim.fn.pumvisible() ~= 0 then
-    if vim.fn.complete_info({ 'selected' }).selected ~= -1 then
-      return npairs.esc('<c-y>')
+    if vim.fn.pumvisible() ~= 0 then
+        if vim.fn.complete_info({ 'selected' }).selected ~= -1 then
+            return npairs.esc('<c-y>')
+        else
+            return npairs.esc('<c-e>') .. npairs.autopairs_cr()
+        end
     else
-      return npairs.esc('<c-e>') .. npairs.autopairs_cr()
+        return npairs.autopairs_cr()
     end
-  else
-    return npairs.autopairs_cr()
-  end
 end
 remap('i', '<cr>', 'v:lua.MUtils.CR()', { expr = true, noremap = true })
 
 MUtils.BS = function()
-  if vim.fn.pumvisible() ~= 0 and vim.fn.complete_info({ 'mode' }).mode == 'eval' then
-    return npairs.esc('<c-e>') .. npairs.autopairs_bs()
-  else
-    return npairs.autopairs_bs()
-  end
+    if vim.fn.pumvisible() ~= 0 and vim.fn.complete_info({ 'mode' }).mode == 'eval' then
+        return npairs.esc('<c-e>') .. npairs.autopairs_bs()
+    else
+        return npairs.autopairs_bs()
+    end
 end
 remap('i', '<bs>', 'v:lua.MUtils.BS()', { expr = true, noremap = true })
 
@@ -324,3 +332,46 @@ vim.keymap.set('n', '<C-n>', function()
         api.tree.open()
     end
 end, { noremap = true, silent = true })
+
+-- Tree Sitter obviously can't work with CLANG or GCC.. 
+-- so Install zig compiler with the command bellow and set it as the compiler for treesitter
+-- winget install --id=zig.zig  -e
+require ('nvim-treesitter.install').compilers = { 'zig'}
+
+-- Treesitter setup
+require'nvim-treesitter.configs'.setup {
+    -- Install specific language parsers or 'all' for all supported languages
+    ensure_installed = { "lua", "python", "javascript", "html", "css", "sql"}, 
+
+    -- Enable highlighting
+    highlight = {
+        enable = true,              -- Enable Tree-sitter-based syntax highlighting
+        additional_vim_regex_highlighting = false,
+    },
+
+    -- Optional: Enable incremental selection and text objects
+    incremental_selection = {
+        enable = true,
+        keymaps = {
+            init_selection = "gnn",
+            node_incremental = "grn",
+            scope_incremental = "grc",
+            node_decremental = "grm",
+        },
+    },
+
+    textobjects = {
+        select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+                ["af"] = "@function.outer",
+                ["if"] = "@function.inner",
+                ["ac"] = "@class.outer",
+                ["ic"] = "@class.inner",
+            },
+        },
+    },
+}
+
+
