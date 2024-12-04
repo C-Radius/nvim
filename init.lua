@@ -178,6 +178,8 @@ vim.api.nvim_set_keymap("n", "<M-l>", "<C-w>l", {})
 vim.api.nvim_set_keymap("n", "<M-h>", "<C-w>h", {})
 vim.api.nvim_set_keymap("n", "<M-k>", "<C-w>h", {})
 vim.api.nvim_set_keymap("n", "<M-j>", "<C-w>j", {})
+vim.api.nvim_set_keymap("n", "bn", "<cmd>bnext", {})
+vim.api.nvim_set_keymap("n", "bp", "<cmd>bprev", {})
 
 -- Telescope Keybindings
 vim.api.nvim_set_keymap("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { noremap = true, silent = true })
@@ -341,7 +343,7 @@ require ('nvim-treesitter.install').compilers = { 'zig'}
 -- Treesitter setup
 require'nvim-treesitter.configs'.setup {
     -- Install specific language parsers or 'all' for all supported languages
-    ensure_installed = { "lua", "python", "javascript", "html", "css", "sql"}, 
+    ensure_installed = { "lua", "python", "javascript", "html", "css", "sql", "rust", "c"}, 
 
     -- Enable highlighting
     highlight = {
