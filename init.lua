@@ -102,6 +102,9 @@ require("packer").startup(function(use)
     }
     use({"dariuscorvus/tree-sitter-language-injection.nvim", after="nvim-treesitter"})
     use('hkupty/iron.nvim')
+    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
+      require("toggleterm").setup()
+    end}
     if packer_bootstrap then
         require("packer").sync()
     end
@@ -545,3 +548,9 @@ vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>')
 
 
 local view = require("iron.view")
+
+-- Map <leader>t to toggle the terminal
+vim.api.nvim_set_keymap('n', '<leader>t', ':ToggleTerm<CR>', { noremap = true, silent = true })
+
+-- Optional: Map <Esc> to exit terminal mode quickly
+vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
