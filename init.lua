@@ -187,6 +187,10 @@ vim.api.nvim_set_keymap("n", "<M-l>", "<C-w>l", {})
 vim.api.nvim_set_keymap("n", "<M-h>", "<C-w>h", {})
 vim.api.nvim_set_keymap("n", "<M-k>", "<C-w>h", {})
 vim.api.nvim_set_keymap("n", "<M-j>", "<C-w>j", {})
+vim.api.nvim_set_keymap("t", "<M-l>", "[[<C-w>l]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-h>", "[[<C-w>h]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-k>", "[[<C-w>h]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-j>", "[[<C-w>j]]", {noremap = true, silent = true})
 vim.api.nvim_set_keymap("n", "bn", ":bnext<CR>", {})
 vim.api.nvim_set_keymap("n", "bp", ":bprev<CR>", {})
 
@@ -341,7 +345,7 @@ end, {})
 
 
 -- Keybinding to toggle nvim-tree (ensures it respects the "right side" configuration)
-vim.keymap.set('n', '<C-n>', function()
+vim.keymap.set('n', '<Leader>n', function()
     local api = require("nvim-tree.api")
     if api.tree.is_visible() then
         api.tree.close()
