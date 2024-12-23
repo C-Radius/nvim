@@ -43,7 +43,6 @@ augroup END
 require("packer").startup(function(use)
     use("wbthomason/packer.nvim") -- Packer manages itself
     use("easymotion/vim-easymotion")
-    use("mbbill/undotree")
     use("olimorris/onedarkpro.nvim")
     use({ "neoclide/coc.nvim", branch = "release" })
     use("nvim-lua/plenary.nvim")
@@ -62,6 +61,15 @@ require("packer").startup(function(use)
                 },
             }
         end
+    }
+    use {
+      "jiaoshijie/undotree",
+      config = function()
+        require('undotree').setup()
+      end,
+      requires = {
+        "nvim-lua/plenary.nvim",
+      },
     }
     use({
         "coffebar/neovim-project",
@@ -103,9 +111,19 @@ require("packer").startup(function(use)
     use({"dariuscorvus/tree-sitter-language-injection.nvim", after="nvim-treesitter"})
     use('hkupty/iron.nvim')
     use {"akinsho/toggleterm.nvim", tag = '*', config = function()
-      require("toggleterm").setup()
-    end}
-    if packer_bootstrap then
+        require("toggleterm").setup {
+            size = 10,
+            open_mapping = [[<C-\>]],
+            start_in_insert = true,
+            direction = "float",
+            shell = "powershell.exe",
+            float_opts = {
+                border = "curved",
+                width = math.ceil(vim.o.columns*0.8),
+                height = math.ceil(vim.o.columns*0.2)
+            }
+        }    end}
+        if packer_bootstrap then
         require("packer").sync()
     end
 end)
@@ -558,3 +576,29 @@ vim.api.nvim_set_keymap('n', '<leader>t', ':ToggleTerm<CR>', { noremap = true, s
 
 -- Optional: Map <Esc> to exit terminal mode quickly
 vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
+
+
+
+local undotree = require('undotree')
+
+undotree.setup({
+  float_diff = true,  -- using float window previews diff, set this `true` will disable layout option
+  layout = "left_bottom", -- "left_bottom", "left_left_bottom"
+  position = "left", -- "right", "bottom"
+  ignore_filetype = { 'undotree', 'undotreeDiff', 'qf', 'TelescopePrompt', 'spectre_panel', 'tsplayground' },
+  window = {
+    winblend = 30,
+  },
+  keymaps = {
+    ['j'] = "move_next",
+    ['k'] = "move_prev",
+    ['gj'] = "move2parent",
+    ['J'] = "move_change_next",
+    ['K'] = "move_change_prev",
+    ['<cr>'] = "action_enter",
+    ['p'] = "enter_diffbuf",
+    ['q'] = "quit",
+  },
+})
+
+vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
