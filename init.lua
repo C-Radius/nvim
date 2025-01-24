@@ -6,63 +6,46 @@
 --
 -- Author: C-Radius
 -- Last Mod: 30/11/2024
--- Check for packer.nvim and install if missing
-local ensure_packer = function()
-    local fn = vim.fn
-    local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
+-- Bootstrap lazy.nvim
 
-    if fn.empty(fn.glob(install_path)) > 0 then
-        print("Installing packer.nvim...")
-        fn.system({
-            "git",
-            "clone",
-            "--depth",
-            "1",
-            "https://github.com/wbthomason/packer.nvim",
-            install_path,
-        })
-        vim.cmd([[packadd packer.nvim]])
-        return true
-    end
-    return false
+--Set neovide cursor trails
+vim.g.neovide_cursor_vfx_mode = "pixiedust"
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    print("Installing lazy.nvim...")
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", -- latest stable release
+        lazypath,
+    })
 end
-
-local packer_bootstrap = ensure_packer()
-
--- Automatically reload and sync packer when this file is saved
-vim.cmd([[
-augroup packer_user_config
-autocmd!
-autocmd BufWritePost init.lua source <afile> | PackerSync
-augroup END
-]])
+vim.opt.rtp:prepend(lazypath)
 
 -- Plugin setup
-require("packer").startup(function(use)
-    use("wbthomason/packer.nvim") -- Packer manages itself
-    use("easymotion/vim-easymotion")
-    use("olimorris/onedarkpro.nvim")
-    use({ "neoclide/coc.nvim", branch = "release" })
-    use("nvim-lua/plenary.nvim")
-    use({ "nvim-telescope/telescope.nvim", tag = "0.1.8" })
-    use({
+require("lazy").setup({
+    { "Vigemus/iron.nvim" },
+    { "easymotion/vim-easymotion" },
+    { "olimorris/onedarkpro.nvim" },
+    { "neoclide/coc.nvim", branch = "release" },
+    { "nvim-lua/plenary.nvim" },
+    { "nvim-telescope/telescope.nvim", tag = "0.1.8" },
+    {
         "kylechui/nvim-surround",
-        tag = "*", -- Use for stability; omit to use `main` branch for the latest features
+        version = "*", -- Use for stability; omit for the latest features
         config = function()
-            require("nvim-surround").setup({
-                -- Configuration here, or leave empty to use defaults
-            })
-        end
-    })    use("windwp/nvim-autopairs")
-    use('rcarriga/nvim-notify')
-    use {
+            require("nvim-surround").setup({})
+        end,
+    },
+    { "windwp/nvim-autopairs" },
+    { "rcarriga/nvim-notify" },
+    {
         "folke/which-key.nvim",
         event = "VeryLazy",
-        opts = {
-            -- your configuration comes here
-            -- or leave it empty to use the default settings
-            -- refer to the configuration section below
-        },
+        opts = {},
         keys = {
             {
                 "<leader>?",
@@ -72,86 +55,76 @@ require("packer").startup(function(use)
                 desc = "Buffer Local Keymaps (which-key)",
             },
         },
-    }
-    use {
-        'nvim-tree/nvim-tree.lua',
-        requires = { 'nvim-tree/nvim-web-devicons' },
+    },
+    {
+        "nvim-tree/nvim-tree.lua",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
         config = function()
-            -- Configure nvim-tree after it's loaded
-            require("nvim-tree").setup {
+            require("nvim-tree").setup({
                 view = {
                     side = "left",
                     width = 30,
                 },
-            }
-        end
-    }
-    use {
+            })
+        end,
+    },
+    {
         "jiaoshijie/undotree",
+        dependencies = { "nvim-lua/plenary.nvim" },
         config = function()
-            require('undotree').setup()
+            require("undotree").setup()
         end,
-        requires = {
-            "nvim-lua/plenary.nvim",
-        },
-    }
-    use({
+    },
+    {
         "coffebar/neovim-project",
+        dependencies = {
+            "nvim-lua/plenary.nvim",
+            { "nvim-telescope/telescope.nvim", tag = "0.1.4", optional = true },
+            { "ibhagwan/fzf-lua", optional = true },
+            "Shatur/neovim-session-manager",
+        },
         config = function()
-            -- enable saving the state of plugins in the session
-            vim.opt.sessionoptions:append("globals") -- save global variables that start with an uppercase letter and contain at least one lowercase letter.
-            -- setup neovim-project plugin
-            require("neovim-project").setup {
-                projects = { -- define project roots
-                    "~/projects/*",
-                    "~/.config/*",
-                },
-                picker = {
-                    type = "telescope", -- or "fzf-lua"
-                }
-            }
+            vim.opt.sessionoptions:append("globals")
+            require("neovim-project").setup({
+                projects = { "~/projects/*", "~/.config/*" },
+                picker = { type = "telescope" },
+            })
         end,
-        requires = {
-            { "nvim-lua/plenary.nvim" },
-            -- optional picker
-            { "nvim-telescope/telescope.nvim", tag = "0.1.4" },
-            -- optional picker
-            { "ibhagwan/fzf-lua" },
-            { "Shatur/neovim-session-manager" },
-        }
-    })
-    -- Tree-sitter setup
-    use {
-        'nvim-treesitter/nvim-treesitter',
-        run = ':TSUpdate' -- Update parsers automatically
-    }
-    -- Optional Tree-sitter plugins
-    use 'nvim-treesitter/nvim-treesitter-textobjects'
-    use 'nvim-treesitter/playground'
-    use {
-        'nvim-lualine/lualine.nvim',
-        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
-    }
-    use({"dariuscorvus/tree-sitter-language-injection.nvim", after="nvim-treesitter"})
-    use('jssee/vim-delight') --Plugin that deactivates highlighting after search when 
-    --you move the cursor and re-enables it when you hit n or N (pretty cool if you ask me)
-    use {"akinsho/toggleterm.nvim", tag = '*', config = function()
-        require("toggleterm").setup {
-            size = 10,
-            open_mapping = [[<C-\>]],
-            start_in_insert = true,
-            direction = "float",
-            shell = "powershell.exe",
-            float_opts = {
-                border = "curved",
-                width = math.ceil(vim.o.columns*0.8),
-                height = math.ceil(vim.o.columns*0.2)
-            }
-        }    end}
-        if packer_bootstrap then
-            require("packer").sync()
-        end
-    end)
+    },
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate", -- Automatically update parsers
+    },
+    { "nvim-treesitter/nvim-treesitter-textobjects" },
+    { "nvim-treesitter/playground" },
+    {
+        "nvim-lualine/lualine.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+    },
+    {
+        "dariuscorvus/tree-sitter-language-injection.nvim",
+        dependencies = { "nvim-treesitter/nvim-treesitter" },
+    },
+    { "jssee/vim-delight" },
+    {
+        "akinsho/toggleterm.nvim",
+        version = "*",
+        config = function()
+            require("toggleterm").setup({
+                size = 10,
+                open_mapping = [[<C-\>]],
+                start_in_insert = true,
+                direction = "float",
+                shell = "powershell.exe",
+                float_opts = {
+                    border = "curved",
+                    width = math.ceil(vim.o.columns * 0.8),
+                    height = math.ceil(vim.o.lines * 0.2),
+                },
+            })
+        end,
+    },
+})
 
     -- Environment variables
     vim.g.polyglot_disabled = { "markdown" }
@@ -159,8 +132,8 @@ require("packer").startup(function(use)
 
     -- Enable Python Support
     if vim.fn.has("win32") == 1 then
-        vim.g.python_host_prog = ""
-        vim.g.python3_host_prog = "C:\\Program Files\\Python310\\python.exe"
+        vim.g.python_host_prog = "C:\\Program Files\\python310\\python.exe"
+        vim.g.python3_host_prog = "C:\\Program Files\\Python310\\python3.exe"
     else
         vim.g.python_host_prog = "/usr/bin/python2"
         vim.g.python3_host_prog = "/usr/bin/python3"
@@ -324,7 +297,7 @@ require("packer").startup(function(use)
 
 
 
-    vim.api.nvim_set_keymap("n", "<leader>r", ":RunPython<CR>", { noremap = true, silent = true })
+    --vim.api.nvim_set_keymap("n", "<leader>r", ":RunPython<CR>", { noremap = true, silent = true })
 
     -- Function to detect and activate a Python virtual environment for running code
     local function detect_project_venv()
@@ -544,11 +517,8 @@ require("packer").startup(function(use)
 
     require('lualine').setup()
 
-    -- Map <leader>t to toggle the terminal
-    vim.api.nvim_set_keymap('n', '<leader>t', ':ToggleTerm<CR>', { noremap = true, silent = true })
-
     -- Optional: Map <Esc> to exit terminal mode quickly
-    vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
+    vim.api.nvim_set_keymap('t', '<C-c>', '<Esc>', { noremap = true, silent = true })
 
 
 
@@ -577,3 +547,121 @@ require("packer").startup(function(use)
     vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
 
     vim.notify= require('notify')
+
+
+    local iron = require("iron.core")
+
+    iron.setup {
+        config = {
+            -- Whether a repl should be discarded or not
+            scratch_repl = true,
+            -- Your repl definitions come here
+            repl_definition = {
+                sh = {
+                    -- Can be a table or a function that
+                    -- returns a table (see below)
+                    command = {"powershell.exe"}
+                },
+                python = {
+                    command = { "python" },  -- or { "ipython", "--no-autoindent" }
+                    format = require("iron.fts.common").bracketed_paste_python,
+                    block_deviders = { "# %%", "#%%" },
+                }
+            },
+            -- How the repl window will be displayed
+            -- See below for more information
+        },
+        -- Iron doesn't set keymaps by default anymore.
+        -- You can set them here or manually add keymaps to the functions in iron.core
+        keymaps = {
+            send_motion = "<space>sc",
+            visual_send = "<space>sc",
+            send_file = "<space>sf",
+            send_line = "<space>sl",
+            send_paragraph = "<space>sp",
+            send_until_cursor = "<space>su",
+            send_mark = "<space>sm",
+            send_code_block = "<space>sb",
+            send_code_block_and_move = "<space>sn",
+            mark_motion = "<space>mc",
+            mark_visual = "<space>mc",
+            remove_mark = "<space>md",
+            cr = "<space>s<cr>",
+            interrupt = "<space>s<space>",
+            exit = "<space>sq",
+            clear = "<space>cl",
+        },
+        -- If the highlight is on, you can change how it looks
+        -- For the available options, check nvim_set_hl
+        highlight = {
+            italic = true
+        },
+        ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
+    }
+
+    -- iron also has a list of commands, see :h iron-commands for all available commands
+    vim.keymap.set('n', '<space>rs', '<cmd>IronRepl<cr>')
+    vim.keymap.set('n', '<space>rr', '<cmd>IronRestart<cr>')
+    vim.keymap.set('n', '<space>rf', '<cmd>IronFocus<cr>')
+    vim.keymap.set('n', '<space>rh', '<cmd>IronHide<cr>')
+
+
+    local view = require("iron.view")
+
+    -- iron.setup {...
+
+    -- One can always use the default commands from vim directly
+    --repl_open_cmd = "horizontal botright 80 split"
+
+
+    -- But iron provides some utility functions to allow you to declare that dynamically,
+    -- based on editor size or custom logic, for example.
+
+    -- Vertical 50 columns split
+    -- Split has a metatable that allows you to set up the arguments in a "fluent" API
+    -- you can write as you would write a vim command.
+    -- It accepts:
+    --   - vertical
+    --   - leftabove/aboveleft
+    --   - rightbelow/belowright
+    --   - topleft
+    --   - botright
+    -- They'll return a metatable that allows you to set up the next argument
+    -- or call it with a size parameter
+    --repl_open_cmd = view.split.vertical.botright(50)
+
+    -- If the supplied number is a fraction between 1 and 0,
+    -- it will be used as a proportion
+    --repl_open_cmd = view.split.vertical.botright(0.61903398875)
+
+    -- The size parameter can be a number, a string or a function.
+    -- When it's a *number*, it will be the size in rows/columns
+    -- If it's a *string*, it requires a "%" sign at the end and is calculated
+    -- as a percentage of the editor size
+    -- If it's a *function*, it should return a number for the size of rows/columns
+
+    repl_open_cmd = view.split("40%")
+
+    -- You can supply custom logic
+    -- to determine the size of your
+    -- repl's window
+    --repl_open_cmd = view.split.topleft(function()
+    --    if some_check then
+    --        return vim.o.lines * 0.4
+    --    end
+    --    return 20
+    --end)
+
+    -- An optional set of options can be given to the split function if one
+    -- wants to configure the window behavior.
+    -- Note that, by default `winfixwidth` and `winfixheight` are set
+    -- to `true`. If you want to overwrite those values,
+    -- you need to specify the keys in the option map as the example below
+
+    --repl_open_cmd = view.split("40%", {
+    --    winfixwidth = false,
+    --    winfixheight = false,
+    --    -- any window-local configuration can be used here
+    --    number = true
+    --}
+    --)
