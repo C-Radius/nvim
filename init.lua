@@ -65,6 +65,10 @@ require("lazy").setup({
                     side = "left",
                     width = 30,
                 },
+                update_focused_file = {
+                    enable = true,
+                    update_cwd = true,
+                }
             })
         end,
     },
@@ -594,8 +598,8 @@ require("lazy").setup({
         -- If the highlight is on, you can change how it looks
         -- For the available options, check nvim_set_hl
         highlight = {
-            italic = true
-        },
+            italic = false
+         },
         ignore_blank_lines = true, -- ignore blank lines when sending visual select lines
     }
 
@@ -628,7 +632,7 @@ require("lazy").setup({
     --   - botright
     -- They'll return a metatable that allows you to set up the next argument
     -- or call it with a size parameter
-    --repl_open_cmd = view.split.vertical.botright(50)
+    repl_open_cmd = view.split.vertical.botright(50)
 
     -- If the supplied number is a fraction between 1 and 0,
     -- it will be used as a proportion
@@ -640,7 +644,7 @@ require("lazy").setup({
     -- as a percentage of the editor size
     -- If it's a *function*, it should return a number for the size of rows/columns
 
-    repl_open_cmd = view.split("40%")
+    --repl_open_cmd = view.split("40%")
 
     -- You can supply custom logic
     -- to determine the size of your
