@@ -111,28 +111,28 @@ require("lazy").setup({
         }
     },
     {"nvim-neo-tree/neo-tree.nvim",
-        branch = "v3.x",
-        dependencies = {
-            "nvim-lua/plenary.nvim",
-            "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
-            "MunifTanjim/nui.nvim",
-            -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
-        },
-        lazy = false, -- neo-tree will lazily load itself
-        ---@module "neo-tree"
-        ---@type neotree.Config?
-        opts = {
-            filesystem = {
-                filtered_items = {
-                    visible = true
-                }
-            }
-        },
+    branch = "v3.x",
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+        "MunifTanjim/nui.nvim",
+        -- {"3rd/image.nvim", opts = {}}, -- Optional image support in preview window: See `# Preview Mode` for more information
     },
-    {
-      "echasnovski/mini.surround",
-      version = "*", -- or a specific version/tag if needed
-      config = function()
+    lazy = false, -- neo-tree will lazily load itself
+    ---@module "neo-tree"
+    ---@type neotree.Config?
+    opts = {
+        filesystem = {
+            filtered_items = {
+                visible = true
+            }
+        }
+    },
+},
+{
+    "echasnovski/mini.surround",
+    version = "*", -- or a specific version/tag if needed
+    config = function()
         require("mini.surround").setup({
             -- Add custom surroundings to be used on top of builtin ones. For more
             -- information with examples, see `:h MiniSurround.config`.
@@ -174,8 +174,8 @@ require("lazy").setup({
             -- idle time if user input is required.
             silent = false,
         })
-      end,
-	},
+    end,
+    },
     {
         's1n7ax/nvim-window-picker',
         name = 'window-picker',
@@ -183,6 +183,23 @@ require("lazy").setup({
         version = '2.*',
         config = function()
             require'window-picker'.setup()
+        end,
+    },
+    -- Install without configuration
+    { 'projekt0n/github-nvim-theme', name = 'github-theme' },
+
+    -- Or with configuration
+    {
+        'projekt0n/github-nvim-theme',
+        name = 'github-theme',
+        lazy = false, -- make sure we load this during startup if it is your main colorscheme
+        priority = 1000, -- make sure to load this before all the other start plugins
+        config = function()
+            require('github-theme').setup({
+                -- ...
+            })
+
+            vim.cmd('colorscheme github_dark')
         end,
     }
 })
@@ -212,8 +229,8 @@ vim.opt.updatetime = 300
 vim.opt.shortmess:append("c")
 vim.opt.signcolumn = "yes"
 vim.opt.background = "dark"
-vim.cmd([[colorscheme onedark_vivid]])
-
+--vim.cmd([[colorscheme onedark_vivid]])
+--vim.cmd([[colorscheme github_default]])
 vim.opt.backspace = { "indent", "eol", "start" }
 vim.opt.linespace = 0
 vim.opt.number = true
@@ -275,6 +292,12 @@ vim.api.nvim_set_keymap("n", "bn", ":bnext<CR>", {})
 vim.api.nvim_set_keymap("n", "bp", ":bprev<CR>", {})
 vim.keymap.set('n', '<leader>n', ':Neotree toggle<CR>', { noremap = true, silent = true })
 
+--coc-actions
+vim.api.nvim_set_keymap("x", "<leader>a", "<Plug>(coc-codeaction-selected)", {})
+vim.api.nvim_set_keymap("n", "<leader>a", "<Plug>(coc-codeaction-selected)", {})
+
+vim.api.nvim_set_keymap("x", "<leader>ac", "<Plug>(coc-codeaction-cursor)", {})
+
 -- Telescope Keybindings
 vim.api.nvim_set_keymap("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { noremap = true, silent = true })
@@ -304,26 +327,6 @@ if vim.g.neovide then
     vim.opt.guifont = "FiraCode Nerd Font:h11"
 end
 
-vim.api.nvim_set_keymap(
-"i",
-"<C-CR>",
-[[coc#pum#visible() ? coc#pum#confirm() : "\<C-CR>"]],
-{ noremap = true, silent = true, expr = true }
-)
-
--- Optional: Use <Tab> and <S-Tab> for navigating suggestions
-vim.api.nvim_set_keymap(
-"i",
-"<Tab>",
-[[coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"]],
-{ noremap = true, silent = true, expr = true }
-)
-vim.api.nvim_set_keymap(
-"i",
-"<S-Tab>",
-[[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]],
-{ noremap = true, silent = true, expr = true }
-)
 
 
 
@@ -657,78 +660,179 @@ require 'window-picker'.setup({
     -- included in the selection
     -- EX:-
     -- function(window_ids, filters)
-    --    -- folder the window_ids
-    --    -- return only the ones you want to include
-    --    return {1000, 1001}
-    -- end
-    filter_func = nil,
+        --    -- folder the window_ids
+        --    -- return only the ones you want to include
+        --    return {1000, 1001}
+        -- end
+        filter_func = nil,
 
-    -- following filters are only applied when you are using the default filter
-    -- defined by this plugin. If you pass in a function to "filter_func"
-    -- property, you are on your own
-    filter_rules = {
-        -- when there is only one window available to pick from, use that window
-        -- without prompting the user to select
-        autoselect_one = true,
+        -- following filters are only applied when you are using the default filter
+        -- defined by this plugin. If you pass in a function to "filter_func"
+        -- property, you are on your own
+        filter_rules = {
+            -- when there is only one window available to pick from, use that window
+            -- without prompting the user to select
+            autoselect_one = true,
 
-        -- whether you want to include the window you are currently on to window
-        -- selection or not
-        include_current_win = false,
+            -- whether you want to include the window you are currently on to window
+            -- selection or not
+            include_current_win = false,
 
-        -- whether to include windows marked as unfocusable
-        include_unfocusable_windows = false,
+            -- whether to include windows marked as unfocusable
+            include_unfocusable_windows = false,
 
-        -- filter using buffer options
-        bo = {
-            -- if the file type is one of following, the window will be ignored
-            filetype = { 'NvimTree', 'neo-tree', 'notify', 'snacks_notif' },
+            -- filter using buffer options
+            bo = {
+                -- if the file type is one of following, the window will be ignored
+                filetype = { 'NvimTree', 'neo-tree', 'notify', 'snacks_notif' },
 
-            -- if the file type is one of following, the window will be ignored
-            buftype = { 'terminal' },
+                -- if the file type is one of following, the window will be ignored
+                buftype = { 'terminal' },
+            },
+
+            -- filter using window options
+            wo = {},
+
+            -- if the file path contains one of following names, the window
+            -- will be ignored
+            file_path_contains = {},
+
+            -- if the file name contains one of following names, the window will be
+            -- ignored
+            file_name_contains = {},
         },
 
-        -- filter using window options
-        wo = {},
-
-        -- if the file path contains one of following names, the window
-        -- will be ignored
-        file_path_contains = {},
-
-        -- if the file name contains one of following names, the window will be
-        -- ignored
-        file_name_contains = {},
-    },
-
-    -- You can pass in the highlight name or a table of content to set as
-    -- highlight
-    highlights = {
-        enabled = true,
-        statusline = {
-            focused = {
-                fg = '#ededed',
-                bg = '#e35e4f',
-                bold = true,
+        -- You can pass in the highlight name or a table of content to set as
+        -- highlight
+        highlights = {
+            enabled = true,
+            statusline = {
+                focused = {
+                    fg = '#ededed',
+                    bg = '#e35e4f',
+                    bold = true,
+                },
+                unfocused = {
+                    fg = '#ededed',
+                    bg = '#44cc41',
+                    bold = true,
+                },
             },
-            unfocused = {
-                fg = '#ededed',
-                bg = '#44cc41',
-                bold = true,
-            },
-        },
-        winbar = {
-            focused = {
-                fg = '#ededed',
-                bg = '#e35e4f',
-                bold = true,
-            },
-            unfocused = {
-                fg = '#ededed',
-                bg = '#44cc41',
-                bold = true,
+            winbar = {
+                focused = {
+                    fg = '#ededed',
+                    bg = '#e35e4f',
+                    bold = true,
+                },
+                unfocused = {
+                    fg = '#ededed',
+                    bg = '#44cc41',
+                    bold = true,
+                },
             },
         },
-    },
-})
-require('window-picker').pick_window({
-    hint = 'floating-big-letter'
-})
+    })
+    require('window-picker').pick_window({
+        hint = 'floating-big-letter'
+    })
+
+
+    local project_actions = require("telescope._extensions.project.actions")
+
+    require('telescope').setup {
+        extensions = {
+            project = {
+                base_dirs = {
+                    '~/dev/src',
+                    {'~/dev/src2'},
+                    {'~/dev/src3', max_depth = 4},
+                    {path = '~/dev/src4'},
+                    {path = '~/dev/src5', max_depth = 2},
+                },
+                ignore_missing_dirs = true,
+                hidden_files = true,
+                theme = "dropdown",
+                order_by = "asc",
+                search_by = "title",
+                sync_with_nvim_tree = true,
+                on_project_selected = function(prompt_bufnr)
+                    project_actions.change_working_directory(prompt_bufnr, false)
+                    on_project_selected = function(prompt_bufnr)
+                        project_actions.change_working_directory(prompt_bufnr, false)
+                    end
+                end,
+                mappings = {
+                    n = {
+                        ['d'] = project_actions.delete_project,
+                        ['r'] = project_actions.rename_project,
+                        ['c'] = project_actions.add_project,
+                        ['C'] = project_actions.add_project_cwd,
+                        ['f'] = project_actions.find_project_files,
+                        ['b'] = project_actions.browse_project_files,
+                        ['s'] = project_actions.search_in_project_files,
+                        ['R'] = project_actions.recent_project_files,
+                        ['w'] = project_actions.change_working_directory,
+                        ['o'] = project_actions.next_cd_scope,
+                    },
+                    i = {
+                        ['<c-d>'] = project_actions.delete_project,
+                        ['<c-v>'] = project_actions.rename_project,
+                        ['<c-a>'] = project_actions.add_project,
+                        ['<c-A>'] = project_actions.add_project_cwd,
+                        ['<c-f>'] = project_actions.find_project_files,
+                        ['<c-b>'] = project_actions.browse_project_files,
+                        ['<c-s>'] = project_actions.search_in_project_files,
+                        ['<c-r>'] = project_actions.recent_project_files,
+                        ['<c-l>'] = project_actions.change_working_directory,
+                        ['<c-o>'] = project_actions.next_cd_scope,
+                    }
+                }
+            }
+        }
+    }
+
+    require('telescope').load_extension('project')
+    vim.keymap.set('n', '<leader>p', function()
+        require('telescope').extensions.project.project{}
+    end, { desc = 'Telescope Project' })
+
+------------------------------------------------------------
+--  Completion + Snippet Jump Setup (Coc + coc-snippets)
+------------------------------------------------------------
+
+-- Safely remove old mappings first
+pcall(vim.keymap.del, 'i', '<Tab>')
+pcall(vim.keymap.del, 'i', '<S-Tab>')
+pcall(vim.keymap.del, 'i', '<C-CR>')
+pcall(vim.keymap.del, 'i', '<CR>')
+
+-- Create easier alias
+local map, opts = vim.keymap.set, { silent = true, expr = true }
+
+-- Completion navigation (move inside popup menu)
+map('i', '<C-n>', 'coc#pum#visible() ? coc#pum#next(1) : "\\<C-n>"', opts)
+map('i', '<C-p>', 'coc#pum#visible() ? coc#pum#prev(1) : "\\<C-p>"', opts)
+
+-- Accept completion (or normal Enter)
+map('i', '<CR>', 'coc#pum#visible() ? coc#pum#confirm() : "\\<CR>"', opts)
+
+-- Snippet jump forward
+map('i', '<Tab>',
+  'coc#pum#visible() ? coc#pum#next(1) : coc#expandableOrJumpable() ? "\\<C-r>=coc#rpc#request(\'snippetNext\', [])<CR>" : "\\<Tab>"',
+opts)
+map('s', '<Tab>',
+  'coc#expandableOrJumpable() ? "\\<C-r>=coc#rpc#request(\'snippetNext\', [])<CR>" : "\\<Tab>"',
+opts)
+
+-- Snippet jump backward
+map('i', '<S-Tab>',
+  'coc#pum#visible() ? coc#pum#prev(1) : coc#jumpable(-1) ? "\\<C-r>=coc#rpc#request(\'snippetPrev\', [])<CR>" : "\\<S-Tab>"',
+opts)
+map('s', '<S-Tab>',
+  'coc#jumpable(-1) ? "\\<C-r>=coc#rpc#request(\'snippetPrev\', [])<CR>" : "\\<S-Tab>"',
+opts)
+-----------------------------------------------------------------
+--  SNIPPET ENGINE  (one-time command, not Lua code)           --
+-----------------------------------------------------------------
+-- :CocInstall coc-snippets
+
