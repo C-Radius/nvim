@@ -1,0 +1,1399 @@
+--   ____      ____           _ _
+--  / ___|    |  _ \ __ _  __| (_)_   _ ___
+-- | |   _____| |_) / _` |/ _` | | | | / __|
+-- | |__|_____|  _ < (_| | (_| | | |_| \__ \
+--  \____|    |_| \_\__,_|\__,_|_|\__,_|___/
+--
+-- Author: C-Radius
+-- Last Mod: 30/04/2025
+-- Bootstrap lazy.nvim
+
+--Set neovide cursor trails
+vim.g.neovide_cursor_vfx_mode = "pixiedust"
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+    print("Installing lazy.nvim...")
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", -- latest stable release
+        lazypath,
+    })
+end
+vim.opt.rtp:prepend(lazypath)
+
+
+--Decide which terminal to use if we're in windows. 
+--Powershell by default, but you can change it to cmd or bash if you want.
+if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
+    vim.opt.shell = "powershell"
+    vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
+    vim.opt.shellquote = ""
+    vim.opt.shellxquote = ""
+end
+
+-- Plugin setup
+require("lazy").setup({
+    { "Vigemus/iron.nvim" },
+    { "easymotion/vim-easymotion" },
+    { "olimorris/onedarkpro.nvim" },
+    { "neoclide/coc.nvim", branch = "release" },
+    { "nvim-lua/plenary.nvim" },
+    { "windwp/nvim-autopairs" },
+    { "rcarriga/nvim-notify" },
+    {'nvim-telescope/telescope.nvim',tag = "0.1.8" },
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        opts = {},
+        keys = {
+            {
+                "<leader>?",
+                function()
+                    require("which-key").show({ global = false })
+                end,
+                desc = "Buffer Local Keymaps (which-key)",
+            },
+        },
+    },
+    {
+        "jiaoshijie/undotree",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require("undotree").setup()
+        end,
+    },
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate", -- Automatically update parsers
+    },
+    { "nvim-treesitter/nvim-treesitter-textobjects" },
+    { "nvim-treesitter/playground" },
+    {
+        "nvim-lualine/lualine.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+    },
+    {
+        "dariuscorvus/tree-sitter-language-injection.nvim",
+        dependencies = { "nvim-treesitter/nvim-treesitter" },
+    },
+    { "jssee/vim-delight" },
+    {
+        "akinsho/toggleterm.nvim",
+        version = "*",
+        config = function()
+            require("toggleterm").setup({
+                size = 10,
+                open_mapping = [[<C-\>]],
+                start_in_insert = true,
+                direction = "float",
+                shell = "powershell.exe",
+                float_opts = {
+                    border = "curved",
+                    width = math.ceil(vim.o.columns * 0.8),
+                    height = math.ceil(vim.o.lines * 0.2),
+                },
+            })
+        end,
+    },
+    {
+        "kndndrj/nvim-dbee",
+        dependencies = {
+            "MunifTanjim/nui.nvim",
+        },
+        build = function()
+            -- Install tries to automatically detect the install method.
+            -- if it fails, try calling it with one of these parameters:
+            --    "curl", "wget", "bitsadmin", "go"
+            require("dbee").install()
+        end,
+        config = function()
+            require("dbee").setup(--[[optional config]])
+        end,
+    },
+    {
+        "nvim-telescope/telescope-project.nvim",
+        dependecies = {
+            'nvim-telescope/telescope.nvim',tag = "0.1.8" 
+        }
+    },
+    {"nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+        "nvim-lua/plenary.nvim",
+        "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
+        "MunifTanjim/nui.nvim",
+        --{ "3rd/image.nvim", opts = {} },
+        "s1n7ax/nvim-window-picker", -- for open_with_window_picker keymaps
+        version = "2.*",
+        config = function()
+            require("window-picker").setup({
+                filter_rules = {
+                    include_current_win = false,
+                    autoselect_one = true,
+                    -- filter using buffer options
+                    bo = {
+                        -- if the file type is one of following, the window will be ignored
+                        filetype = { "neo-tree", "neo-tree-popup", "notify" },
+                        -- if the buffer type is one of following, the window will be ignored
+                        buftype = { "terminal", "quickfix" },
+                    },
+                },
+            })
+        end,
+    },   
+    lazy = false, -- neo-tree will lazily load itself
+    ---@module "neo-tree"
+    ---@type neotree.Config?
+    opts = {
+        filesystem = {
+            filtered_items = {
+                visible = true
+            }
+        }
+    },
+},
+{
+    "echasnovski/mini.surround",
+    version = "*", -- or a specific version/tag if needed
+    config = function()
+        require("mini.surround").setup({
+            -- Add custom surroundings to be used on top of builtin ones. For more
+            -- information with examples, see `:h MiniSurround.config`.
+            custom_surroundings = nil,
+
+            -- Duration (in ms) of highlight when calling `MiniSurround.highlight()`
+            highlight_duration = 500,
+
+            -- Module mappings. Use `''` (empty string) to disable one.
+            mappings = {
+                add = 'sa', -- Add surrounding in Normal and Visual modes
+                delete = 'sd', -- Delete surrounding
+                find = 'sf', -- Find surrounding (to the right)
+                find_left = 'sF', -- Find surrounding (to the left)
+                highlight = 'sh', -- Highlight surrounding
+                replace = 'sr', -- Replace surrounding
+                update_n_lines = 'sn', -- Update `n_lines`
+
+                suffix_last = 'l', -- Suffix to search with "prev" method
+                suffix_next = 'n', -- Suffix to search with "next" method
+            },
+
+            -- Number of lines within which surrounding is searched
+            n_lines = 20,
+
+            -- Whether to respect selection type:
+            -- - Place surroundings on separate lines in linewise mode.
+            -- - Place surroundings on each line in blockwise mode.
+            respect_selection_type = false,
+
+            -- How to search for surrounding (first inside current line, then inside
+            -- neighborhood). One of 'cover', 'cover_or_next', 'cover_or_prev',
+            -- 'cover_or_nearest', 'next', 'prev', 'nearest'. For more details,
+            -- see `:h MiniSurround.config`.
+            search_method = 'cover',
+
+            -- Whether to disable showing non-error feedback
+            -- This also affects (purely informational) helper messages shown after
+            -- idle time if user input is required.
+            silent = false,
+        })
+    end,
+},
+{
+    's1n7ax/nvim-window-picker',
+    name = 'window-picker',
+    event = 'VeryLazy',
+    version = '2.*',
+    config = function()
+        require'window-picker'.setup()
+    end,
+},
+-- Install without configuration
+{ 'projekt0n/github-nvim-theme', name = 'github-theme' },
+
+-- Or with configuration
+{
+    'projekt0n/github-nvim-theme',
+    name = 'github-theme',
+    lazy = false, -- make sure we load this during startup if it is your main colorscheme
+    priority = 1000, -- make sure to load this before all the other start plugins
+    config = function()
+        require('github-theme').setup({
+            -- ...
+        })
+
+        vim.cmd('colorscheme github_dark')
+    end,
+},
+{"github/copilot.vim" },
+{
+    'rmagatti/auto-session',
+    config = function()
+        require('auto-session').setup({
+        enabled = true, -- Enables/disables auto creating, saving and restoring
+        root_dir = vim.fn.stdpath "data" .. "/sessions/", -- Root dir where sessions will be stored
+        auto_save = true, -- Enables/disables auto saving session on exit
+        auto_restore = true, -- Enables/disables auto restoring session on start
+        auto_create = true, -- Enables/disables auto creating new session files. Can take a function that should return true/false if a new session file should be created or not
+        suppressed_dirs = nil, -- Suppress session restore/create in certain directories
+        allowed_dirs = nil, -- Allow session restore/create in certain directories
+        auto_restore_last_session = false, -- On startup, loads the last saved session if session for cwd does not exist
+        git_use_branch_name = false, -- Include git branch name in session name
+        git_auto_restore_on_branch_change = false, -- Should we auto-restore the session when the git branch changes. Requires git_use_branch_name
+        lazy_support = true, -- Automatically detect if Lazy.nvim is being used and wait until Lazy is done to make sure session is restored correctly. Does nothing if Lazy isn't being used. Can be disabled if a problem is suspected or for debugging
+        bypass_save_filetypes = nil, -- List of filetypes to bypass auto save when the only buffer open is one of the file types listed, useful to ignore dashboards
+        close_unsupported_windows = true, -- Close windows that aren't backed by normal file before autosaving a session
+        args_allow_single_directory = true, -- Follow normal sesion save/load logic if launched with a single directory as the only argument
+        args_allow_files_auto_save = false, -- Allow saving a session even when launched with a file argument (or multiple files/dirs). It does not load any existing session first. While you can just set this to true, you probably want to set it to a function that decides when to save a session when launched with file args. See documentation for more detail
+        continue_restore_on_error = true, -- Keep loading the session even if there's an error
+        show_auto_restore_notif = false, -- Whether to show a notification when auto-restoring
+        cwd_change_handling = false, -- Follow cwd changes, saving a session before change and restoring after
+        lsp_stop_on_restore = false, -- Should language servers be stopped when restoring a session. Can also be a function that will be called if set. Not called on autorestore from startup
+        restore_error_handler = nil, -- Called when there's an error restoring. By default, it ignores fold errors otherwise it displays the error and returns false to disable auto_save
+        purge_after_minutes = nil, -- Sessions older than purge_after_minutes will be deleted asynchronously on startup, e.g. set to 14400 to delete sessions that haven't been accessed for more than 10 days, defaults to off (no purging), requires >= nvim 0.10
+        log_level = "error", -- Sets the log level of the plugin (debug, info, warn, error).
+
+        session_lens = {
+            load_on_setup = true, -- Initialize on startup (requires Telescope)
+            theme_conf = { -- Pass through for Telescope theme options
+                -- layout_config = { -- As one example, can change width/height of picker
+                    --   width = 0.8,    -- percent of window
+                    --   height = 0.5,
+                    -- },
+                },
+                previewer = false, -- File preview for session picker
+
+                mappings = {
+                    -- Mode can be a string or a table, e.g. {"i", "n"} for both insert and normal mode
+                    delete_session = { "i", "<C-D>" },
+                    alternate_session = { "i", "<C-S>" },
+                    copy_session = { "i", "<C-Y>" },
+                },
+
+                session_control = {
+                    control_dir = vim.fn.stdpath "data" .. "/auto_session/", -- Auto session control dir, for control files, like alternating between two sessions with session-lens
+                    control_filename = "session_control.json", -- File name of the session control file
+                },
+            },
+        }    )
+    end,
+    lazy = false,
+    keys = {
+        -- Will use Telescope if installed or a vim.ui.select picker otherwise
+        { '<leader>wr', '<cmd>SessionSearch<CR>', desc = 'Session search' },
+        { '<leader>ws', '<cmd>SessionSave<CR>', desc = 'Save session' },
+        { '<leader>wa', '<cmd>SessionToggleAutoSave<CR>', desc = 'Toggle autosave' },
+    },
+
+    ---enables autocomplete for opts
+    ---@module "auto-session"
+    ---@type AutoSession.Config
+    opts = {
+        -- ⚠️ This will only work if Telescope.nvim is installed
+        -- The following are already the default values, no need to provide them if these are already the settings you want.
+        session_lens = {
+            -- If load_on_setup is false, make sure you use `:SessionSearch` to open the picker as it will initialize everything first
+            load_on_setup = true,
+            previewer = false,
+            mappings = {
+                -- Mode can be a string or a table, e.g. {"i", "n"} for both insert and normal mode
+                delete_session = { "i", "<C-D>" },
+                alternate_session = { "i", "<C-S>" },
+                copy_session = { "i", "<C-Y>" },
+            },
+            -- Can also set some Telescope picker options
+            -- For all options, see: https://github.com/nvim-telescope/telescope.nvim/blob/master/doc/telescope.txt#L112
+            theme_conf = {
+                border = true,
+                -- layout_config = {
+                    --   width = 0.8, -- Can set width and height as percent of window
+                    --   height = 0.5,
+                    -- },
+                },
+            },
+        }
+    }
+})
+
+-- Environment variables
+vim.g.polyglot_disabled = { "markdown" }
+vim.env.NVIM_PYTHON_LOG_FILE = "C:\\nvim.log" -- Set location for NVIM log file.
+
+-- Enable Python Support
+if vim.fn.has("win32") == 1 then
+    vim.g.python_host_prog = "C:\\Program Files\\python310\\python.exe"
+    vim.g.python3_host_prog = "C:\\Program Files\\Python310\\python3.exe"
+else
+    vim.g.python_host_prog = "/usr/bin/python2"
+    vim.g.python3_host_prog = "/usr/bin/python3"
+end
+
+-- Set options
+vim.opt.compatible = false
+vim.opt.path:append("**")
+vim.opt.termguicolors = true
+vim.opt.hidden = true
+vim.opt.backup = false
+vim.opt.writebackup = false
+vim.opt.cmdheight = 1
+vim.opt.updatetime = 300
+vim.opt.shortmess:append("c")
+vim.opt.signcolumn = "yes"
+vim.opt.background = "dark"
+--vim.cmd([[colorscheme onedark_vivid]])
+--vim.cmd([[colorscheme github_default]])
+vim.opt.backspace = { "indent", "eol", "start" }
+vim.opt.linespace = 0
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.showmatch = true
+vim.opt.incsearch = true
+vim.opt.hlsearch = true
+vim.opt.winminheight = 0
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.wildmenu = true
+vim.opt.wildmode = { "list:longest", "full" }
+vim.opt.whichwrap = "b,s,h,l,<,>,[,]"
+
+vim.opt.scrolljump = 5
+vim.opt.scrolloff = 3
+vim.opt.foldenable = true
+vim.opt.wrap = false
+vim.opt.autoindent = true
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.joinspaces = false
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.laststatus = 1
+vim.opt.encoding = "utf-8"
+vim.opt.ttimeoutlen = 50
+vim.opt.mouse = "a"
+vim.opt.swapfile = false
+vim.opt.keymap = "greek_utf-8"
+vim.opt.iminsert = 0
+vim.opt.imsearch = -1
+vim.opt.guicursor = ""
+vim.opt.autochdir = true
+
+-- Keybindings
+vim.g.mapleader = ","
+vim.api.nvim_set_keymap("n", "<leader>ev", ":e $MYVIMRC<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<leader>sv", ":so $MYVIMRC<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<leader>cd", ":cd %:h", { silent = true })
+vim.api.nvim_set_keymap("i", "<C-c>", "<Esc>", {})
+vim.api.nvim_set_keymap("i", "jj", "<Esc>", {})
+vim.api.nvim_set_keymap("i", "<M-l>", "<C-w>l", {})
+vim.api.nvim_set_keymap("i", "<M-h>", "<C-w>h", {})
+vim.api.nvim_set_keymap("i", "<M-k>", "<C-w>k", {})
+vim.api.nvim_set_keymap("i", "<M-j>", "<C-w>j", {})
+vim.api.nvim_set_keymap("n", "<M-l>", "<C-w>l", {})
+vim.api.nvim_set_keymap("n", "<M-h>", "<C-w>h", {})
+vim.api.nvim_set_keymap("n", "<M-k>", "<C-w>k", {})
+vim.api.nvim_set_keymap("n", "<M-j>", "<C-w>j", {})
+vim.api.nvim_set_keymap("t", "<M-l>", "[[<C-w>l]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-h>", "[[<C-w>h]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-k>", "[[<C-w>k]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap("t", "<M-j>", "[[<C-w>j]]", {noremap = true, silent = true})
+vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "bn", ":bnext<CR>", {})
+vim.api.nvim_set_keymap("n", "bp", ":bprev<CR>", {})
+
+vim.keymap.set('n', '<leader>n', ':Neotree toggle<CR>', { noremap = true, silent = true })
+
+--coc-actions
+vim.api.nvim_set_keymap("x", "<leader>a", "<Plug>(coc-codeaction-selected)", {})
+vim.api.nvim_set_keymap("n", "<leader>a", "<Plug>(coc-codeaction-selected)", {})
+
+vim.api.nvim_set_keymap("x", "<leader>ac", "<Plug>(coc-codeaction-cursor)", {})
+
+-- Telescope Keybindings
+vim.api.nvim_set_keymap("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { noremap = true, silent = true })
+
+
+vim.keymap.set('n', '<leader>e', ":call CocActionAsync('diagnosticInfo')<CR>", { silent = true, desc = 'Show diagnostic info' })
+vim.keymap.set('n', '<leader>q', ":CocList diagnostics<CR>", { silent = true, desc = 'Open diagnostics list' })
+
+vim.keymap.set('n', '<leader>rr', ":CocCommand rust-analyzer.run<CR>")
+-- Relativenumber toggle
+vim.api.nvim_exec(
+[[
+  augroup numbertoggle
+    autocmd!
+    autocmd BufEnter,FocusGained,InsertLeave * set relativenumber
+    autocmd BufLeave,FocusLost,InsertEnter * set norelativenumber
+  augroup END
+]],
+false
+)
+-- Additional settings for Neovide
+if vim.g.neovide then
+    vim.opt.guifont = "FiraCode Nerd Font:h11"
+end
+
+--This code will create a terminal split for running `cargo watch` with `clippy` in Rust files.
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "rust",
+  callback = function()
+    -- Start cargo watch in 10-line terminal split
+    vim.keymap.set("n", "<leader>cw", function()
+      -- Open a 10-line terminal split and run cargo watch with clippy
+      vim.cmd("belowright 10split | terminal cargo watch -q --why -x clippy")
+      -- Optionally, enter insert mode automatically in the terminal
+      vim.cmd("startinsert")
+    end, { buffer = true, desc = "Start cargo watch in terminal" })
+  end,
+})
+--end of terminal split
+
+--keymap for buffer deletion (mostly to use in kb
+
+local npairs = require('nvim-autopairs')
+
+npairs.setup({ map_bs = false, map_cr = false })
+
+vim.g.coq_settings = { keymap = { recommended = false } }
+
+--vim.api.nvim_set_keymap("n", "<leader>r", ":RunPython<CR>", { noremap = true, silent = true })
+
+-- Function to detect and activate a Python virtual environment for running code
+local function detect_project_venv()
+    local function find_venv(start_dir)
+        local path_sep = package.config:sub(1, 1) -- Path separator ('/' or '\')
+        local dir = start_dir
+
+        while dir do
+            local venv_dirs = {
+                dir .. path_sep .. "venv",
+                dir .. path_sep .. ".venv",
+                dir .. path_sep .. "env"
+            }
+
+            for _, venv in ipairs(venv_dirs) do
+                local python_exec = venv .. path_sep .. "Scripts" .. path_sep .. "python.exe" -- Windows
+                if vim.fn.has("win32") == 0 then
+                    python_exec = venv .. path_sep .. "bin" .. path_sep .. "python"
+                end
+
+                if vim.fn.executable(python_exec) == 1 then
+                    return python_exec
+                end
+            end
+
+            -- Move up to the parent directory
+            local parent_dir = vim.fn.fnamemodify(dir, ":h")
+            if parent_dir == dir then
+                break
+            end
+            dir = parent_dir
+        end
+        return nil
+    end
+
+    -- Get the directory of the file opened in Neovide or fallback to cwd
+    local file_dir = vim.fn.expand("%:p:h")
+    if vim.fn.empty(file_dir) == 1 then
+        file_dir = vim.loop.cwd()
+    end
+
+    -- Find and return the virtual environment Python path
+    return find_venv(file_dir)
+end
+
+-- Set up the virtual environment for running code
+local project_venv = detect_project_venv()
+if project_venv then
+    vim.g.project_python = project_venv
+    print("Project virtual environment detected: " .. project_venv)
+else
+    vim.g.project_python = "python" -- Fallback to system Python
+    print("No project virtual environment found. Using system Python.")
+end
+
+-- Autocommands to detect virtual environments
+vim.api.nvim_create_autocmd({"DirChanged", "BufReadPost"}, {
+    pattern = "*",
+    callback = detect_project_venv,
+})
+-- Define a command to run Python files using the detected virtual environment
+vim.api.nvim_create_user_command("RunPython", function()
+    local python = vim.g.project_python
+    local file = vim.fn.expand("%:p") -- Current file's full path
+    vim.cmd("!" .. python .. " " .. file)
+end, {})
+
+
+-- Tree Sitter obviously can't work with CLANG or GCC.. 
+-- so Install zig compiler with the command bellow and set it as the compiler for treesitter
+-- winget install --id=zig.zig  -e
+require ('nvim-treesitter.install').compilers = { 'zig'}
+
+-- Treesitter setup
+require'nvim-treesitter.configs'.setup {
+    -- Install specific language parsers or 'all' for all supported languages
+    ensure_installed = {"query", "lua", "python", "javascript", "html", "css", "sql", "c"}, 
+
+    toggle_injected_languages = 't',
+    -- Enable highlighting
+    highlight = {
+        enable = true,              -- Enable Tree-sitter-based syntax highlighting
+        additional_vim_regex_highlighting = false,
+    },
+
+    -- Optional: Enable incremental selection and text objects
+    incremental_selection = {
+        enable = true,
+        keymaps = {
+            init_selection = "gnn",
+            node_incremental = "grn",
+            scope_incremental = "grc",
+            node_decremental = "grm",
+        },
+    },
+
+    textobjects = {
+        select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+                ['aa'] = '@parameter.outer',
+                ['ia'] = '@parameter.inner',
+                ['af'] = '@function.outer',
+                ['if'] = '@function.inner',
+                ['ac'] = '@class.outer',
+                ['ic'] = '@class.inner',
+            },
+        },
+    },
+    move = {
+        enable = true,
+        set_jumps = true, -- whether to set jumps in the jumplist
+        goto_next_start = {
+            [']m'] = '@function.outer',
+            [']]'] = '@class.outer',
+        },
+        goto_next_end = {
+            [']M'] = '@function.outer',
+            [']['] = '@class.outer',
+        },
+        goto_previous_start = {
+            ['[m'] = '@function.outer',
+            ['[['] = '@class.outer',
+        },
+        goto_previous_end = {
+            ['[M'] = '@function.outer',
+            ['[]'] = '@class.outer',
+        },
+    },
+    swap = {
+        enable = true,
+        swap_next = {
+            ['<leader>a'] = '@parameter.inner',
+        },
+        swap_previous = {
+            ['<leader>A'] = '@parameter.inner',
+        },
+    },
+    playground = {
+        enable = true,
+        disable = {},
+        updatetime = 25, -- Debounced time for highlighting nodes in the playground from source code
+        persist_queries = false, -- Whether the query persists across vim sessions
+        keybindings = {
+            toggle_query_editor = 'o',
+            toggle_hl_groups = 'i',
+            toggle_injected_languages = 't',
+            toggle_anonymous_nodes = 'a',
+            toggle_language_display = 'I',
+            focus_language = 'f',
+            unfocus_language = 'F',
+            update = 'R',
+            goto_node = '<cr>',
+            show_help = '?',
+        },
+    },
+
+    query_linter = {
+        enable = true,
+        use_virtual_text = true,
+        lint_events = {"BufWrite", "CursorHold"},
+    },
+}
+
+require('lualine').setup {
+    options = {
+        icons_enabled = true,
+        theme = 'auto',
+        component_separators = { left = '', right = ''},
+        section_separators = { left = '', right = ''},
+        disabled_filetypes = {
+            statusline = {},
+            winbar = {},
+        },
+        ignore_focus = {},
+        always_divide_middle = true,
+        always_show_tabline = true,
+        globalstatus = false,
+        refresh = {
+            statusline = 100,
+            tabline = 100,
+            winbar = 100,
+        }
+    },
+    sections = {
+        lualine_a = {'mode'},
+        lualine_b = {'branch', 'diff', 'diagnostics'},
+        lualine_c = {
+            {
+                'filename',
+                file_status = true,
+                path = 2,
+            }
+        },
+        lualine_x = {'encoding', 'fileformat', 'filetype'},
+        lualine_y = {'progress'},
+        lualine_z = {'location'}
+    },
+    inactive_sections = {
+        lualine_a = {},
+        lualine_b = {},
+        lualine_c = {'filename'},
+        lualine_x = {'location'},
+        lualine_y = {},
+        lualine_z = {}
+    },
+    tabline = {},
+    winbar = {},
+    inactive_winbar = {},
+    extensions = {}
+}
+
+require('lualine').setup()
+
+-- Optional: Map <Esc> to exit terminal mode quickly
+vim.api.nvim_set_keymap('t', '<C-c>', '<Esc>', { noremap = true, silent = true })
+
+
+
+local undotree = require('undotree')
+
+undotree.setup({
+    float_diff = true,  -- using float window previews diff, set this `true` will disable layout option
+    layout = "left_bottom", -- "left_bottom", "left_left_bottom"
+    position = "left", -- "right", "bottom"
+    ignore_filetype = { 'undotree', 'undotreeDiff', 'qf', 'TelescopePrompt', 'spectre_panel', 'tsplayground' },
+    window = {
+        winblend = 30,
+    },
+    keymaps = {
+        ['j'] = "move_next",
+        ['k'] = "move_prev",
+        ['gj'] = "move2parent",
+        ['J'] = "move_change_next",
+        ['K'] = "move_change_prev",
+        ['<cr>'] = "action_enter",
+        ['p'] = "enter_diffbuf",
+        ['q'] = "quit",
+    },
+})
+
+vim.keymap.set('n', '<leader>u', require('undotree').toggle, { noremap = true, silent = true })
+
+vim.notify= require('notify')
+
+
+require 'window-picker'.setup({
+    -- type of hints you want to get
+    -- following types are supported
+    -- 'statusline-winbar' | 'floating-big-letter' | 'floating-letter'
+    -- 'statusline-winbar' draw on 'statusline' if possible, if not 'winbar' will be
+    -- 'floating-big-letter' draw big letter on a floating window
+    -- 'floating-letter' draw letter on a floating window
+    -- used
+    hint = 'statusline-winbar',
+
+    -- when you go to window selection mode, status bar will show one of
+    -- following letters on them so you can use that letter to select the window
+    selection_chars = 'FJDKSLA;CMRUEIWOQP',
+
+    -- This section contains picker specific configurations
+    picker_config = {
+        -- whether should select window by clicking left mouse button on it
+        handle_mouse_click = false,
+        statusline_winbar_picker = {
+            -- You can change the display string in status bar.
+            -- It supports '%' printf style. Such as `return char .. ': %f'` to display
+            -- buffer file path. See :h 'stl' for details.
+            selection_display = function(char, windowid)
+                return '%=' .. char .. '%='
+            end,
+
+            -- whether you want to use winbar instead of the statusline
+            -- "always" means to always use winbar,
+            -- "never" means to never use winbar
+            -- "smart" means to use winbar if cmdheight=0 and statusline if cmdheight > 0
+            use_winbar = 'never', -- "always" | "never" | "smart"
+        },
+
+        floating_big_letter = {
+            -- window picker plugin provides bunch of big letter fonts
+            -- fonts will be lazy loaded as they are being requested
+            -- additionally, user can pass in a table of fonts in to font
+            -- property to use instead
+
+            font = 'ansi-shadow', -- ansi-shadow |
+        },
+    },
+
+    -- whether to show 'Pick window:' prompt
+    show_prompt = true,
+
+    -- prompt message to show to get the user input
+    prompt_message = 'Pick window: ',
+
+    -- if you want to manually filter out the windows, pass in a function that
+    -- takes two parameters. You should return window ids that should be
+    -- included in the selection
+    -- EX:-
+    -- function(window_ids, filters)
+        --    -- folder the window_ids
+        --    -- return only the ones you want to include
+        --    return {1000, 1001}
+        -- end
+        filter_func = nil,
+
+        -- following filters are only applied when you are using the default filter
+        -- defined by this plugin. If you pass in a function to "filter_func"
+        -- property, you are on your own
+        filter_rules = {
+            -- when there is only one window available to pick from, use that window
+            -- without prompting the user to select
+            autoselect_one = true,
+
+            -- whether you want to include the window you are currently on to window
+            -- selection or not
+            include_current_win = false,
+
+            -- whether to include windows marked as unfocusable
+            include_unfocusable_windows = false,
+
+            -- filter using buffer options
+            bo = {
+                -- if the file type is one of following, the window will be ignored
+                filetype = { 'NvimTree', 'neo-tree', 'notify', 'snacks_notif' },
+
+                -- if the file type is one of following, the window will be ignored
+                buftype = { 'terminal' },
+            },
+
+            -- filter using window options
+            wo = {},
+
+            -- if the file path contains one of following names, the window
+            -- will be ignored
+            file_path_contains = {},
+
+            -- if the file name contains one of following names, the window will be
+            -- ignored
+            file_name_contains = {},
+        },
+
+        -- You can pass in the highlight name or a table of content to set as
+        -- highlight
+        highlights = {
+            enabled = true,
+            statusline = {
+                focused = {
+                    fg = '#ededed',
+                    bg = '#e35e4f',
+                    bold = true,
+                },
+                unfocused = {
+                    fg = '#ededed',
+                    bg = '#44cc41',
+                    bold = true,
+                },
+            },
+            winbar = {
+                focused = {
+                    fg = '#ededed',
+                    bg = '#e35e4f',
+                    bold = true,
+                },
+                unfocused = {
+                    fg = '#ededed',
+                    bg = '#44cc41',
+                    bold = true,
+                },
+            },
+        },
+    })
+    require('window-picker').pick_window({
+        hint = 'floating-big-letter'
+    })
+
+
+    local project_actions = require("telescope._extensions.project.actions")
+
+    require('telescope').setup {
+        extensions = {
+            project = {
+                base_dirs = {
+                    '~/dev/src',
+                    {'~/dev/src2'},
+                    {'~/dev/src3', max_depth = 4},
+                    {path = '~/dev/src4'},
+                    {path = '~/dev/src5', max_depth = 2},
+                },
+                ignore_missing_dirs = true,
+                hidden_files = true,
+                theme = "dropdown",
+                order_by = "asc",
+                search_by = "title",
+                sync_with_nvim_tree = true,
+                on_project_selected = function(prompt_bufnr)
+                    project_actions.change_working_directory(prompt_bufnr, false)
+                end,
+                mappings = {
+                    n = {
+                        ['d'] = project_actions.delete_project,
+                        ['r'] = project_actions.rename_project,
+                        ['c'] = project_actions.add_project,
+                        ['C'] = project_actions.add_project_cwd,
+                        ['f'] = project_actions.find_project_files,
+                        ['b'] = project_actions.browse_project_files,
+                        ['s'] = project_actions.search_in_project_files,
+                        ['R'] = project_actions.recent_project_files,
+                        ['w'] = project_actions.change_working_directory,
+                        ['o'] = project_actions.next_cd_scope,
+                    },
+                    i = {
+                        ['<c-d>'] = project_actions.delete_project,
+                        ['<c-v>'] = project_actions.rename_project,
+                        ['<c-a>'] = project_actions.add_project,
+                        ['<c-A>'] = project_actions.add_project_cwd,
+                        ['<c-f>'] = project_actions.find_project_files,
+                        ['<c-b>'] = project_actions.browse_project_files,
+                        ['<c-s>'] = project_actions.search_in_project_files,
+                        ['<c-r>'] = project_actions.recent_project_files,
+                        ['<c-l>'] = project_actions.change_working_directory,
+                        ['<c-o>'] = project_actions.next_cd_scope,
+                    }
+                }
+            }
+        }
+    }
+
+    require('telescope').load_extension('project')
+    vim.keymap.set('n', '<leader>p', function()
+        require('telescope').extensions.project.project{}
+    end, { desc = 'Telescope Project' })
+
+    ------------------------------------------------------------
+    --  Completion + Snippet Jump Setup (Coc + coc-snippets)
+    ------------------------------------------------------------
+    -- Some servers have issues with backup files, see #649
+    vim.opt.backup = false
+    vim.opt.writebackup = false
+
+    -- Having longer updatetime (default is 4000 ms = 4s) leads to noticeable
+    -- delays and poor user experience
+    vim.opt.updatetime = 300
+
+    -- Always show the signcolumn, otherwise it would shift the text each time
+    -- diagnostics appeared/became resolved
+    vim.opt.signcolumn = "yes"
+
+    local keyset = vim.keymap.set
+    -- Autocomplete
+    function _G.check_back_space()
+        local col = vim.fn.col('.') - 1
+        return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
+    end
+
+    -- Use Tab for trigger completion with characters ahead and navigate
+    -- NOTE: There's always a completion item selected by default, you may want to enable
+    -- no select by setting `"suggest.noselect": true` in your configuration file
+    -- NOTE: Use command ':verbose imap <tab>' to make sure Tab is not mapped by
+    -- other plugins before putting this into your config
+    local opts = {silent = true, noremap = true, expr = true, replace_keycodes = false}
+    keyset("i", "<TAB>", 'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()', opts)
+    keyset("i", "<S-TAB>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+
+    -- Make <CR> to accept selected completion item or notify coc.nvim to format
+    -- <C-g>u breaks current undo, please make your own choice
+    keyset("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+
+    -- Use <c-j> to trigger snippets
+    keyset("i", "<c-j>", "<Plug>(coc-snippets-expand-jump)")
+    -- Use <c-space> to trigger completion
+    keyset("i", "<c-space>", "coc#refresh()", {silent = true, expr = true})
+
+    -- Use `[g` and `]g` to navigate diagnostics
+    -- Use `:CocDiagnostics` to get all diagnostics of current buffer in location list
+    keyset("n", "[g", "<Plug>(coc-diagnostic-prev)", {silent = true})
+    keyset("n", "]g", "<Plug>(coc-diagnostic-next)", {silent = true})
+
+    -- GoTo code navigation
+    keyset("n", "gd", "<Plug>(coc-definition)", {silent = true})
+    keyset("n", "gy", "<Plug>(coc-type-definition)", {silent = true})
+    keyset("n", "gi", "<Plug>(coc-implementation)", {silent = true})
+    keyset("n", "gr", "<Plug>(coc-references)", {silent = true})
+
+
+    -- Use K to show documentation in preview window
+    function _G.show_docs()
+        local cw = vim.fn.expand('<cword>')
+        if vim.fn.index({'vim', 'help'}, vim.bo.filetype) >= 0 then
+            vim.api.nvim_command('h ' .. cw)
+        elseif vim.api.nvim_eval('coc#rpc#ready()') then
+            vim.fn.CocActionAsync('doHover')
+        else
+            vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+        end
+    end
+    keyset("n", "K", '<CMD>lua _G.show_docs()<CR>', {silent = true})
+
+
+    -- Highlight the symbol and its references on a CursorHold event(cursor is idle)
+    vim.api.nvim_create_augroup("CocGroup", {})
+    vim.api.nvim_create_autocmd("CursorHold", {
+        group = "CocGroup",
+        command = "silent call CocActionAsync('highlight')",
+        desc = "Highlight symbol under cursor on CursorHold"
+    })
+
+
+    -- Symbol renaming
+    keyset("n", "<leader>rn", "<Plug>(coc-rename)", {silent = true})
+
+
+    -- Formatting selected code
+    keyset("x", "<leader>f", "<Plug>(coc-format-selected)", {silent = true})
+    keyset("n", "<leader>f", "<Plug>(coc-format-selected)", {silent = true})
+
+
+    -- Setup formatexpr specified filetype(s)
+    vim.api.nvim_create_autocmd("FileType", {
+        group = "CocGroup",
+        pattern = "typescript,json",
+        command = "setl formatexpr=CocAction('formatSelected')",
+        desc = "Setup formatexpr specified filetype(s)."
+    })
+
+    -- Apply codeAction to the selected region
+    -- Example: `<leader>aap` for current paragraph
+    local opts = {silent = true, nowait = true}
+    keyset("x", "<leader>a", "<Plug>(coc-codeaction-selected)", opts)
+    keyset("n", "<leader>a", "<Plug>(coc-codeaction-selected)", opts)
+
+    -- Remap keys for apply code actions at the cursor position.
+    keyset("n", "<leader>ac", "<Plug>(coc-codeaction-cursor)", opts)
+    -- Remap keys for apply source code actions for current file.
+    keyset("n", "<leader>as", "<Plug>(coc-codeaction-source)", opts)
+    -- Apply the most preferred quickfix action on the current line.
+    keyset("n", "<leader>qf", "<Plug>(coc-fix-current)", opts)
+
+    -- Remap keys for apply refactor code actions.
+    keyset("n", "<leader>re", "<Plug>(coc-codeaction-refactor)", { silent = true })
+    keyset("x", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
+    keyset("n", "<leader>r", "<Plug>(coc-codeaction-refactor-selected)", { silent = true })
+
+    -- Run the Code Lens actions on the current line
+    keyset("n", "<leader>cl", "<Plug>(coc-codelens-action)", opts)
+
+
+    -- Map function and class text objects
+    -- NOTE: Requires 'textDocument.documentSymbol' support from the language server
+    keyset("x", "if", "<Plug>(coc-funcobj-i)", opts)
+    keyset("o", "if", "<Plug>(coc-funcobj-i)", opts)
+    keyset("x", "af", "<Plug>(coc-funcobj-a)", opts)
+    keyset("o", "af", "<Plug>(coc-funcobj-a)", opts)
+    keyset("x", "ic", "<Plug>(coc-classobj-i)", opts)
+    keyset("o", "ic", "<Plug>(coc-classobj-i)", opts)
+    keyset("x", "ac", "<Plug>(coc-classobj-a)", opts)
+    keyset("o", "ac", "<Plug>(coc-classobj-a)", opts)
+
+
+    -- Remap <C-f> and <C-b> to scroll float windows/popups
+    ---@diagnostic disable-next-line: redefined-local
+    local opts = {silent = true, nowait = true, expr = true}
+    keyset("n", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
+    keyset("n", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
+    keyset("i", "<C-f>",
+    'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(1)<cr>" : "<Right>"', opts)
+    keyset("i", "<C-b>",
+    'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(0)<cr>" : "<Left>"', opts)
+    keyset("v", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
+    keyset("v", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
+
+
+    -- Use CTRL-S for selections ranges
+    -- Requires 'textDocument/selectionRange' support of language server
+    keyset("n", "<C-s>", "<Plug>(coc-range-select)", {silent = true})
+    keyset("x", "<C-s>", "<Plug>(coc-range-select)", {silent = true})
+
+
+    -- Add `:Format` command to format current buffer
+    vim.api.nvim_create_user_command("Format", "call CocAction('format')", {})
+
+    -- " Add `:Fold` command to fold current buffer
+    vim.api.nvim_create_user_command("Fold", "call CocAction('fold', <f-args>)", {nargs = '?'})
+
+    -- Add `:OR` command for organize imports of the current buffer
+    vim.api.nvim_create_user_command("OR", "call CocActionAsync('runCommand', 'editor.action.organizeImport')", {})
+
+    -- Add (Neo)Vim's native statusline support
+    -- NOTE: Please see `:h coc-status` for integrations with external plugins that
+    -- provide custom statusline: lightline.vim, vim-airline
+    vim.opt.statusline:prepend("%{coc#status()}%{get(b:,'coc_current_function','')}")
+
+    -- Mappings for CoCList
+    -- code actions and coc stuff
+    ---@diagnostic disable-next-line: redefined-local
+    local opts = {silent = true, nowait = true}
+    -- Show all diagnostics
+    keyset("n", "<space>a", ":<C-u>CocList diagnostics<cr>", opts)
+    -- Manage extensions
+    keyset("n", "<space>e", ":<C-u>CocList extensions<cr>", opts)
+    -- Show commands
+    keyset("n", "<space>c", ":<C-u>CocList commands<cr>", opts)
+    -- Find symbol of current document
+    keyset("n", "<space>o", ":<C-u>CocList outline<cr>", opts)
+    -- Search workspace symbols
+    keyset("n", "<space>s", ":<C-u>CocList -I symbols<cr>", opts)
+    -- Do default action for next item
+    keyset("n", "<space>j", ":<C-u>CocNext<cr>", opts)
+    -- Do default action for previous item
+    keyset("n", "<space>k", ":<C-u>CocPrev<cr>", opts)
+    -- Resume latest coc list
+    keyset("n", "<space>p", ":<C-u>CocListResume<cr>", opts)
+
+
+
+
+    require("neo-tree").setup({
+        close_if_last_window = false, -- Close Neo-tree if it is the last window left in the tab
+        popup_border_style = "NC", -- or "" to use 'winborder' on Neovim v0.11+
+        enable_git_status = true,
+        enable_diagnostics = true,
+        open_files_do_not_replace_types = { "terminal", "trouble", "qf" }, -- when opening files, do not use windows containing these filetypes or buftypes
+        open_files_using_relative_paths = false,
+        sort_case_insensitive = false, -- used when sorting files and directories in the tree
+        sort_function = nil, -- use a custom function for sorting files and directories in the tree
+        -- sort_function = function (a,b)
+            --       if a.type == b.type then
+            --           return a.path > b.path
+            --       else
+            --           return a.type > b.type
+            --       end
+            --   end , -- this sorts files and directories descendantly
+            default_component_configs = {
+                container = {
+                    enable_character_fade = true,
+                },
+                indent = {
+                    indent_size = 2,
+                    padding = 1, -- extra padding on left hand side
+                    -- indent guides
+                    with_markers = true,
+                    indent_marker = "│",
+                    last_indent_marker = "└",
+                    highlight = "NeoTreeIndentMarker",
+                    -- expander config, needed for nesting files
+                    with_expanders = nil, -- if nil and file nesting is enabled, will enable expanders
+                    expander_collapsed = "",
+                    expander_expanded = "",
+                    expander_highlight = "NeoTreeExpander",
+                },
+                icon = {
+                    folder_closed = "",
+                    folder_open = "",
+                    folder_empty = "󰜌",
+                    provider = function(icon, node, state) -- default icon provider utilizes nvim-web-devicons if available
+                        if node.type == "file" or node.type == "terminal" then
+                            local success, web_devicons = pcall(require, "nvim-web-devicons")
+                            local name = node.type == "terminal" and "terminal" or node.name
+                            if success then
+                                local devicon, hl = web_devicons.get_icon(name)
+                                icon.text = devicon or icon.text
+                                icon.highlight = hl or icon.highlight
+                            end
+                        end
+                    end,
+                    -- The next two settings are only a fallback, if you use nvim-web-devicons and configure default icons there
+                    -- then these will never be used.
+                    default = "*",
+                    highlight = "NeoTreeFileIcon",
+                },
+                modified = {
+                    symbol = "[+]",
+                    highlight = "NeoTreeModified",
+                },
+                name = {
+                    trailing_slash = false,
+                    use_git_status_colors = true,
+                    highlight = "NeoTreeFileName",
+                },
+                git_status = {
+                    symbols = {
+                        -- Change type
+                        added = "", -- or "✚", but this is redundant info if you use git_status_colors on the name
+                        modified = "", -- or "", but this is redundant info if you use git_status_colors on the name
+                        deleted = "✖", -- this can only be used in the git_status source
+                        renamed = "󰁕", -- this can only be used in the git_status source
+                        -- Status type
+                        untracked = "",
+                        ignored = "",
+                        unstaged = "󰄱",
+                        staged = "",
+                        conflict = "",
+                    },
+                },
+                -- If you don't want to use these columns, you can set `enabled = false` for each of them individually
+                file_size = {
+                    enabled = true,
+                    width = 12, -- width of the column
+                    required_width = 64, -- min width of window required to show this column
+                },
+                type = {
+                    enabled = true,
+                    width = 10, -- width of the column
+                    required_width = 122, -- min width of window required to show this column
+                },
+                last_modified = {
+                    enabled = true,
+                    width = 20, -- width of the column
+                    required_width = 88, -- min width of window required to show this column
+                },
+                created = {
+                    enabled = true,
+                    width = 20, -- width of the column
+                    required_width = 110, -- min width of window required to show this column
+                },
+                symlink_target = {
+                    enabled = false,
+                },
+            },
+            -- A list of functions, each representing a global custom command
+            -- that will be available in all sources (if not overridden in `opts[source_name].commands`)
+            -- see `:h neo-tree-custom-commands-global`
+            commands = {},
+            window = {
+                position = "left",
+                width = 40,
+                mapping_options = {
+                    noremap = true,
+                    nowait = true,
+                },
+                mappings = {
+                    ["<space>"] = {
+                        "toggle_node",
+                        nowait = false, -- disable `nowait` if you have existing combos starting with this char that you want to use
+                    },
+                    ["<2-LeftMouse>"] = "open",
+                    ["<cr>"] = "open",
+                    ["<esc>"] = "cancel", -- close preview or floating neo-tree window
+                    ["P"] = { "toggle_preview", config = { use_float = true, use_image_nvim = true } },
+                    -- Read `# Preview Mode` for more information
+                    ["l"] = "focus_preview",
+                    ["S"] = "open_split",
+                    ["s"] = "open_vsplit",
+                    -- ["S"] = "split_with_window_picker",
+                    -- ["s"] = "vsplit_with_window_picker",
+                    ["t"] = "open_tabnew",
+                    -- ["<cr>"] = "open_drop",
+                    -- ["t"] = "open_tab_drop",
+                    ["w"] = "open_with_window_picker",
+                    --["P"] = "toggle_preview", -- enter preview mode, which shows the current node without focusing
+                    ["C"] = "close_node",
+                    -- ['C'] = 'close_all_subnodes',
+                    ["z"] = "close_all_nodes",
+                    --["Z"] = "expand_all_nodes",
+                    --["Z"] = "expand_all_subnodes",
+                    ["a"] = {
+                        "add",
+                        -- this command supports BASH style brace expansion ("x{a,b,c}" -> xa,xb,xc). see `:h neo-tree-file-actions` for details
+                        -- some commands may take optional config options, see `:h neo-tree-mappings` for details
+                        config = {
+                            show_path = "none", -- "none", "relative", "absolute"
+                        },
+                    },
+                    ["A"] = "add_directory", -- also accepts the optional config.show_path option like "add". this also supports BASH style brace expansion.
+                    ["d"] = "delete",
+                    ["r"] = "rename",
+                    ["b"] = "rename_basename",
+                    ["y"] = "copy_to_clipboard",
+                    ["x"] = "cut_to_clipboard",
+                    ["p"] = "paste_from_clipboard",
+                    ["c"] = "copy", -- takes text input for destination, also accepts the optional config.show_path option like "add":
+                    -- ["c"] = {
+                        --  "copy",
+                        --  config = {
+                            --    show_path = "none" -- "none", "relative", "absolute"
+                            --  }
+                            --}
+                            ["m"] = "move", -- takes text input for destination, also accepts the optional config.show_path option like "add".
+                            ["q"] = "close_window",
+                            ["R"] = "refresh",
+                            ["?"] = "show_help",
+                            ["<"] = "prev_source",
+                            [">"] = "next_source",
+                            ["i"] = "show_file_details",
+                            -- ["i"] = {
+                                --   "show_file_details",
+                                --   -- format strings of the timestamps shown for date created and last modified (see `:h os.date()`)
+                                --   -- both options accept a string or a function that takes in the date in seconds and returns a string to display
+                                --   -- config = {
+                                    --   --   created_format = "%Y-%m-%d %I:%M %p",
+                                    --   --   modified_format = "relative", -- equivalent to the line below
+                                    --   --   modified_format = function(seconds) return require('neo-tree.utils').relative_date(seconds) end
+                                    --   -- }
+                                    -- },
+                                },
+                            },
+                            nesting_rules = {},
+                            filesystem = {
+                                filtered_items = {
+                                    visible = true, -- when true, they will just be displayed differently than normal items
+                                    hide_dotfiles = false,
+                                    hide_gitignored = true,
+                                    hide_hidden = false, -- only works on Windows for hidden files/directories
+                                    hide_by_name = {
+                                        --"node_modules"
+                                    },
+                                    hide_by_pattern = { -- uses glob style patterns
+                                        --"*.meta",
+                                        --"*/src/*/tsconfig.json",
+                                    },
+                                    always_show = { -- remains visible even if other settings would normally hide it
+                                        --".gitignored",
+                                    },
+                                    always_show_by_pattern = { -- uses glob style patterns
+                                        --".env*",
+                                    },
+                                    never_show = { -- remains hidden even if visible is toggled to true, this overrides always_show
+                                        --".DS_Store",
+                                        --"thumbs.db"
+                                    },
+                                    never_show_by_pattern = { -- uses glob style patterns
+                                        --".null-ls_*",
+                                    },
+                                },
+                                follow_current_file = {
+                                    enabled = false, -- This will find and focus the file in the active buffer every time
+                                    --               -- the current file is changed while the tree is open.
+                                    leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+                                },
+                                group_empty_dirs = false, -- when true, empty folders will be grouped together
+                                hijack_netrw_behavior = "open_default", -- netrw disabled, opening a directory opens neo-tree
+                                -- in whatever position is specified in window.position
+                                -- "open_current",  -- netrw disabled, opening a directory opens within the
+                                -- window like netrw would, regardless of window.position
+                                -- "disabled",    -- netrw left alone, neo-tree does not handle opening dirs
+                                use_libuv_file_watcher = false, -- This will use the OS level file watchers to detect changes
+                                -- instead of relying on nvim autocmd events.
+                                window = {
+                                    mappings = {
+                                        ["<bs>"] = "navigate_up",
+                                        ["."] = "set_root",
+                                        ["H"] = "toggle_hidden",
+                                        ["/"] = "fuzzy_finder",
+                                        ["D"] = "fuzzy_finder_directory",
+                                        ["#"] = "fuzzy_sorter", -- fuzzy sorting using the fzy algorithm
+                                        -- ["D"] = "fuzzy_sorter_directory",
+                                        ["f"] = "filter_on_submit",
+                                        ["<c-x>"] = "clear_filter",
+                                        ["[g"] = "prev_git_modified",
+                                        ["]g"] = "next_git_modified",
+                                        ["o"] = {
+                                            "show_help",
+                                            nowait = false,
+                                            config = { title = "Order by", prefix_key = "o" },
+                                        },
+                                        ["oc"] = { "order_by_created", nowait = false },
+                                        ["od"] = { "order_by_diagnostics", nowait = false },
+                                        ["og"] = { "order_by_git_status", nowait = false },
+                                        ["om"] = { "order_by_modified", nowait = false },
+                                        ["on"] = { "order_by_name", nowait = false },
+                                        ["os"] = { "order_by_size", nowait = false },
+                                        ["ot"] = { "order_by_type", nowait = false },
+                                        -- ['<key>'] = function(state) ... end,
+                                    },
+                                    fuzzy_finder_mappings = { -- define keymaps for filter popup window in fuzzy_finder_mode
+                                        ["<down>"] = "move_cursor_down",
+                                        ["<C-n>"] = "move_cursor_down",
+                                        ["<up>"] = "move_cursor_up",
+                                        ["<C-p>"] = "move_cursor_up",
+                                        ["<esc>"] = "close",
+                                        -- ['<key>'] = function(state, scroll_padding) ... end,
+                                    },
+                                },
+
+                                commands = {}, -- Add a custom command or override a global one using the same function name
+                            },
+                            buffers = {
+                                follow_current_file = {
+                                    enabled = true, -- This will find and focus the file in the active buffer every time
+                                    --              -- the current file is changed while the tree is open.
+                                    leave_dirs_open = false, -- `false` closes auto expanded dirs, such as with `:Neotree reveal`
+                                },
+                                group_empty_dirs = true, -- when true, empty folders will be grouped together
+                                show_unloaded = true,
+                                window = {
+                                    mappings = {
+                                        ["d"] = "buffer_delete",
+                                        ["bd"] = "buffer_delete",
+                                        ["<bs>"] = "navigate_up",
+                                        ["."] = "set_root",
+                                        ["o"] = {
+                                            "show_help",
+                                            nowait = false,
+                                            config = { title = "Order by", prefix_key = "o" },
+                                        },
+                                        ["oc"] = { "order_by_created", nowait = false },
+                                        ["od"] = { "order_by_diagnostics", nowait = false },
+                                        ["om"] = { "order_by_modified", nowait = false },
+                                        ["on"] = { "order_by_name", nowait = false },
+                                        ["os"] = { "order_by_size", nowait = false },
+                                        ["ot"] = { "order_by_type", nowait = false },
+                                    },
+                                },
+                            },
+                            git_status = {
+                                window = {
+                                    position = "float",
+                                    mappings = {
+                                        ["A"] = "git_add_all",
+                                        ["gu"] = "git_unstage_file",
+                                        ["ga"] = "git_add_file",
+                                        ["gr"] = "git_revert_file",
+                                        ["gc"] = "git_commit",
+                                        ["gp"] = "git_push",
+                                        ["gg"] = "git_commit_and_push",
+                                        ["o"] = {
+                                            "show_help",
+                                            nowait = false,
+                                            config = { title = "Order by", prefix_key = "o" },
+                                        },
+                                        ["oc"] = { "order_by_created", nowait = false },
+                                        ["od"] = { "order_by_diagnostics", nowait = false },
+                                        ["om"] = { "order_by_modified", nowait = false },
+                                        ["on"] = { "order_by_name", nowait = false },
+                                        ["os"] = { "order_by_size", nowait = false },
+                                        ["ot"] = { "order_by_type", nowait = false },
+                                    },
+                                },
+                            },
+                        })
+
