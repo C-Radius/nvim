@@ -1,4 +1,5 @@
-
+--extensions to auto install
+vim.g.coc_global_extensions = {'coc-snippets', 'coc-prettier', 'coc-actions', 'coc-rust-analyzer', 'coc-python', 'coc-pyright', 'coc-lua', 'coc-csharp', 'coc-sql'}
 --coc-actions
 vim.api.nvim_set_keymap("x", "<leader>a", "<Plug>(coc-codeaction-selected)", {})
 vim.api.nvim_set_keymap("n", "<leader>a", "<Plug>(coc-codeaction-selected)", {})

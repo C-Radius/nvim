@@ -108,14 +108,21 @@ require("lazy").setup({
 },
 {"github/copilot.vim" },
 {
-    'rmagatti/auto-session',
-    config = function()
-    end,    
+  'rmagatti/auto-session',
+  lazy = false,
+
+  ---enables autocomplete for opts
+  ---@module "auto-session"
+  ---@type AutoSession.Config
+  opts = {
+    suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
+    -- log_level = 'debug',
+  }
 }
 })  
 
 require("plugins.config_coc")
-require("plugins.config_copilot")
+require("plugins.config_auto_session")
 require("plugins.config_neotree")
 require("plugins.config_telescope")
 require("plugins.config_treesitter")

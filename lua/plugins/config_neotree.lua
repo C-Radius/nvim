@@ -312,3 +312,6 @@ require("neo-tree").setup({
                             },
                         },
                     })
+
+                    -- Keybinding to open NeoTree to the Neovim home directory (config path)
+                    vim.api.nvim_set_keymap('n', '<leader>n', ':Neotree toggle<CR>', { noremap = true, silent = true })

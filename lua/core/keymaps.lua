@@ -1,9 +1,8 @@
 
 -- Keybindings
 vim.g.mapleader = ","
---vim.api.nvim_set_keymap("n", "<leader>ev", ":e $MYVIMRC<CR>", { silent = true })
---vim.api.nvim_set_keymap("n", "<leader>sv", ":so $MYVIMRC<CR>", { silent = true })
-vim.api.nvim_set_keymap("n", "<leader>ev", ":cd $LOCALAPPDATA\\nvim<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>ev", ":e $MYVIMRC<CR>", { silent = true })
+vim.api.nvim_set_keymap("n", "<leader>sv", ":so $MYVIMRC<CR>", { silent = true })
 vim.api.nvim_set_keymap("n", "<leader>cd", ":cd %:h", { silent = true })
 vim.api.nvim_set_keymap("i", "<C-c>", "<Esc>", {})
 vim.api.nvim_set_keymap("i", "jj", "<Esc>", {})
@@ -23,7 +22,6 @@ vim.api.nvim_set_keymap('t', '<Esc>', [[<C-\><C-n>]], { noremap = true, silent =
 vim.api.nvim_set_keymap("n", "bn", ":bnext<CR>", {})
 vim.api.nvim_set_keymap("n", "bp", ":bprev<CR>", {})
 
-vim.keymap.set('n', '<leader>n', ':Neotree toggle<CR>', { noremap = true, silent = true })
 
 
 
