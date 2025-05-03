@@ -186,3 +186,10 @@ vim.api.nvim_set_keymap("x", "<leader>ac", "<Plug>(coc-codeaction-cursor)", {})
     keyset("n", "<space>k", ":<C-u>CocPrev<cr>", opts)
     -- Resume latest coc list
     keyset("n", "<space>p", ":<C-u>CocListResume<cr>", opts)
+
+
+-- keymaps for coc-git
+vim.api.nvim_set_keymap("n", "<leader>gg", ":CocCommand git.chunkStage<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>gu", ":CocCommand git.chunkUndo<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>gs", ":CocCommand git.status<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>gb", ":CocCommand git.showBlameDoc<CR>", { noremap = true, silent = true })

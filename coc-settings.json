@@ -1,4 +1,6 @@
 {
   "snippets.ultisnips.pythonPrompt": false,
-
+  "git.addGBlameToVirtualText": true,
+  "git.enableGutters": true,
+  "git.enableCodeLens": false
 }
