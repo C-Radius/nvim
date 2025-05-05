@@ -106,20 +106,7 @@ require("lazy").setup({
     lazy = false, -- make sure we load this during startup if it is your main colorscheme
     priority = 1000, -- make sure to load this before all the other start plugins
 },
-{"github/copilot.vim" },
-
---{
---  'rmagatti/auto-session',
---  lazy = false,
---
---  ---enables autocomplete for opts
---  ---@module "auto-session"
---  ---@type AutoSession.Config
---  opts = {
---    suppressed_dirs = { '~/', '~/Projects', '~/Downloads', '/' },
---    -- log_level = 'debug',
---  }
---}
+{ "github/copilot.vim", }
 })  
 
 require("plugins.config_coc")
@@ -132,4 +119,11 @@ require("plugins.config_mini_surround")
 require("plugins.config_undotree")
 require("plugins.config_lualine")
 require("plugins.config_toggleterm")
---require("plugins.config_auto_session")
+require("plugins.config_copilot")
+
+
+-- In the case that there's configuration between plugins 
+-- meaning plugins that need to work together and share settings
+-- we use a plugins bridge directory and store a file for each bridging of plugins. 
+-- This statment includes all files from the plugins bridge directory.
+require("utils.loader").require_all_from("plugins.plugin_bridge")

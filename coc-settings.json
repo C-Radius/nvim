@@ -2,5 +2,11 @@
   "snippets.ultisnips.pythonPrompt": false,
   "git.addGBlameToVirtualText": true,
   "git.enableGutters": true,
-  "git.enableCodeLens": false
+  "git.enableCodeLens": false,
+  "hover.floatConfig": {
+    "border": [ "╭", "─", "╮", "│", "╯", "─", "╰", "│" ]
+  },
+  "signature.floatConfig": {
+    "border": [ "╭", "─", "╮", "│", "╯", "─", "╰", "│" ]
+  }
 }

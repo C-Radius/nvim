@@ -94,3 +94,43 @@ vim.api.nvim_create_user_command("RunPython", function()
     vim.cmd("!" .. python .. " " .. file)
 end, {})
 
+-- Split separation visual enchancement 
+-- Function to apply custom highlight settings
+local function darken_color(hex, amount)
+  -- Remove '#' and convert to RGB
+  local r = tonumber(hex:sub(2, 3), 16)
+  local g = tonumber(hex:sub(4, 5), 16)
+  local b = tonumber(hex:sub(6, 7), 16)
+
+  -- Apply darkening factor
+  r = math.floor(r * (1 - amount))
+  g = math.floor(g * (1 - amount))
+  b = math.floor(b * (1 - amount))
+
+  -- Clamp to 00–FF and return hex string
+  return string.format("#%02x%02x%02x", r, g, b)
+end
+
+local function set_custom_ui()
+  -- Get Normal highlight group
+  local ok, normal_hl = pcall(vim.api.nvim_get_hl_by_name, "Normal", true)
+  if not ok or not normal_hl.background then return end
+
+  -- Convert to hex
+  local bg = string.format("#%06x", normal_hl.background)
+  local darker_bg = darken_color(bg, 0.18) -- ~18% darker
+
+  -- Apply highlights
+  vim.cmd(string.format("hi NormalNC guibg=%s", darker_bg))
+  vim.cmd("hi VertSplit guifg=#555555 guibg=NONE")
+  vim.cmd("hi WinSeparator guifg=#666666 guibg=NONE")
+end
+
+-- Reapply on colorscheme change
+vim.api.nvim_create_autocmd("ColorScheme", {
+  pattern = "*",
+  callback = set_custom_ui,
+})
+
+-- Apply immediately at startup
+set_custom_ui()

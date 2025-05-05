@@ -49,3 +49,17 @@ vim.opt.iminsert = 0
 vim.opt.imsearch = -1
 vim.opt.guicursor = ""
 vim.opt.autochdir = true
+
+
+-- Split border characters setup for cleaner look
+vim.opt.fillchars:append({
+  vert = '│',
+  horiz = '─',
+  horizup = '┴',
+  horizdown = '┬',
+  vertleft = '┤',
+  vertright = '├',
+  verthoriz = '┼',
+})
+
+vim.o.winbar = "%=%m %f"
