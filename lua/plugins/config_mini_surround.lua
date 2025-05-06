@@ -1,5 +1,8 @@
-
-require("mini.surround").setup({
+return {
+    "echasnovski/mini.surround",
+    version = "*",
+    config = function ()
+        require("mini.surround").setup({
             -- Add custom surroundings to be used on top of builtin ones. For more
             -- information with examples, see `:h MiniSurround.config`.
             custom_surroundings = nil,
@@ -40,3 +43,5 @@ require("mini.surround").setup({
             -- idle time if user input is required.
             silent = false,
         })
+    end
+}
