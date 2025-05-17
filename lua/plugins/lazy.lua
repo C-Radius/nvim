@@ -8,6 +8,7 @@ require("lazy").setup({
     { "windwp/nvim-autopairs" },
     { "jssee/vim-delight" },
     { "github/copilot.vim" },
+    { "b0o/schemastore.nvim"},
 
     -- Configured plugins
     require("plugins.github-nvim-theme"),
