@@ -3,7 +3,23 @@ return {
   tag = '0.1.8',
   dependencies = {
     'nvim-lua/plenary.nvim',
-    'nvim-telescope/telescope-project.nvim'
+    { "nvim-telescope/telescope-fzf-native.nvim", build = 'make' },
+    { "nvim-telescope/telescope-ui-select.nvim" },
+    { "nvim-telescope/telescope-file-browser.nvim" },
+    { "nvim-telescope/telescope-frecency.nvim" },
+    { "nvim-telescope/telescope-symbols.nvim" },
+    { 'nvim-telescope/telescope-project.nvim' },
+    { "nvim-telescope/telescope-media-files.nvim" },
+    { "nvim-telescope/telescope-github.nvim" },
+    { "nvim-telescope/telescope-packer.nvim" },
+    { "nvim-telescope/telescope-z.nvim" },
+    { "nvim-telescope/telescope-hop.nvim" },
+    { "nvim-telescope/telescope-arecibo.nvim" },
+    { "nvim-telescope/telescope-bibtex.nvim" },
+    { "nvim-telescope/telescope-packer.nvim" },
+    { "nvim-telescope/telescope-arecibo.nvim" },
+    { "nvim-telescope/telescope-bibtex.nvim" },
+    { "nvim-tree/nvim-web-devicons" },
   },
   config = function()
     local telescope = require('telescope')

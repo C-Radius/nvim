@@ -3,7 +3,6 @@ return {
     name = 'github-theme',
     lazy = false,
     priority = 1000,
-    commit = '2f1e6e5', -- known good as of earlier builds
     config = function()
         require("github-theme").setup({})
         vim.cmd("colorscheme github_dark")
