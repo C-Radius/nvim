@@ -5,9 +5,35 @@
 --  \____|    |_| \_\__,_|\__,_|_|\__,_|___/
 --
 -- Author: C-Radius
--- Last Mod: 01/05/2025
+-- Last Mod: 17/05/2025
 -- Bootstrap lazy.nvim
 
+-----------------------------------------------------------------------------------------------------------
+-- Configuration target version
+-- Check if current nvim version is compatible with the version these config files were setup for.
+-----------------------------------------------------------------------------------------------------------
+local required_nvim_version = "0.10.4"
+
+-- Get current version table: { major, minor, patch }
+local actual = vim.version()
+local actual_version = ("%d.%d.%d"):format(actual.major, actual.minor, actual.patch)
+
+-- Compare version strings
+if actual_version ~= required_nvim_version then
+    vim.schedule(function()
+        vim.notify(
+            string.format(
+                "⚠️  Your Neovim version is %s — this config was built for %s.\nCompatibility issues may occur.",
+                actual_version,
+                required_nvim_version
+            ),
+            vim.log.levels.WARN
+        )
+    end)
+end
+----------------------------------------------------------------------------------------------------------
+
+-- Neovim version
 -- This section is for neovide settings
 --Set neovide cursor trails
 vim.g.neovide_cursor_vfx_mode = "pixiedust"
@@ -34,7 +60,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 
---Decide which terminal to use if we're in windows. 
+--Decide which terminal to use if we're in windows.
 --Powershell by default, but you can change it to cmd or bash if you want.
 if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
     vim.opt.shell = "powershell"
@@ -62,4 +88,3 @@ require("core.options")
 require("core.keymaps")
 require("core.autocmds")
 require("plugins.lazy")
-

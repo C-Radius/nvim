@@ -1,29 +1,28 @@
-
 -- Relativenumber toggle
 vim.api.nvim_exec(
-[[
+    [[
   augroup numbertoggle
     autocmd!
     autocmd BufEnter,FocusGained,InsertLeave * set relativenumber
     autocmd BufLeave,FocusLost,InsertEnter * set norelativenumber
   augroup END
 ]],
-false
+    false
 )
 
 
 --This code will create a terminal split for running `cargo watch` with `clippy` in Rust files.
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "rust",
-  callback = function()
-    -- Start cargo watch in 10-line terminal split
-    vim.keymap.set("n", "<leader>cw", function()
-      -- Open a 10-line terminal split and run cargo watch with clippy
-      vim.cmd("belowright 10split | terminal cargo watch -q --why -x clippy")
-      -- Optionally, enter insert mode automatically in the terminal
-      vim.cmd("startinsert")
-    end, { buffer = true, desc = "Start cargo watch in terminal" })
-  end,
+    pattern = "rust",
+    callback = function()
+        -- Start cargo watch in 10-line terminal split
+        vim.keymap.set("n", "<leader>cw", function()
+            -- Open a 10-line terminal split and run cargo watch with clippy
+            vim.cmd("belowright 10split | terminal cargo watch -q --why -x clippy")
+            -- Optionally, enter insert mode automatically in the terminal
+            vim.cmd("startinsert")
+        end, { buffer = true, desc = "Start cargo watch in terminal" })
+    end,
 })
 --end of terminal split
 --
@@ -83,7 +82,7 @@ else
 end
 
 -- Autocommands to detect virtual environments
-vim.api.nvim_create_autocmd({"DirChanged", "BufReadPost"}, {
+vim.api.nvim_create_autocmd({ "DirChanged", "BufReadPost" }, {
     pattern = "*",
     callback = detect_project_venv,
 })
@@ -94,43 +93,82 @@ vim.api.nvim_create_user_command("RunPython", function()
     vim.cmd("!" .. python .. " " .. file)
 end, {})
 
--- Split separation visual enchancement 
+-- Split separation visual enchancement
 -- Function to apply custom highlight settings
 local function darken_color(hex, amount)
-  -- Remove '#' and convert to RGB
-  local r = tonumber(hex:sub(2, 3), 16)
-  local g = tonumber(hex:sub(4, 5), 16)
-  local b = tonumber(hex:sub(6, 7), 16)
+    -- Remove '#' and convert to RGB
+    local r = tonumber(hex:sub(2, 3), 16)
+    local g = tonumber(hex:sub(4, 5), 16)
+    local b = tonumber(hex:sub(6, 7), 16)
 
-  -- Apply darkening factor
-  r = math.floor(r * (1 - amount))
-  g = math.floor(g * (1 - amount))
-  b = math.floor(b * (1 - amount))
+    -- Apply darkening factor
+    r = math.floor(r * (1 - amount))
+    g = math.floor(g * (1 - amount))
+    b = math.floor(b * (1 - amount))
 
-  -- Clamp to 00–FF and return hex string
-  return string.format("#%02x%02x%02x", r, g, b)
+    -- Clamp to 00–FF and return hex string
+    return string.format("#%02x%02x%02x", r, g, b)
 end
 
 local function set_custom_ui()
-  -- Get Normal highlight group
-  local ok, normal_hl = pcall(vim.api.nvim_get_hl_by_name, "Normal", true)
-  if not ok or not normal_hl.background then return end
+    -- Get Normal highlight group
+    local ok, normal_hl = pcall(vim.api.nvim_get_hl_by_name, "Normal", true)
+    if not ok or not normal_hl.background then return end
 
-  -- Convert to hex
-  local bg = string.format("#%06x", normal_hl.background)
-  local darker_bg = darken_color(bg, 0.18) -- ~18% darker
+    -- Convert to hex
+    local bg = string.format("#%06x", normal_hl.background)
+    local darker_bg = darken_color(bg, 0.18) -- ~18% darker
 
-  -- Apply highlights
-  vim.cmd(string.format("hi NormalNC guibg=%s", darker_bg))
-  vim.cmd("hi VertSplit guifg=#555555 guibg=NONE")
-  vim.cmd("hi WinSeparator guifg=#666666 guibg=NONE")
+    -- Apply highlights
+    vim.cmd(string.format("hi NormalNC guibg=%s", darker_bg))
+    vim.cmd("hi VertSplit guifg=#555555 guibg=NONE")
+    vim.cmd("hi WinSeparator guifg=#666666 guibg=NONE")
 end
 
 -- Reapply on colorscheme change
 vim.api.nvim_create_autocmd("ColorScheme", {
-  pattern = "*",
-  callback = set_custom_ui,
+    pattern = "*",
+    callback = set_custom_ui,
 })
 
 -- Apply immediately at startup
 set_custom_ui()
+
+-- Check if we have nerd fonts installed
+vim.api.nvim_create_autocmd("VimEnter", {
+    callback = function()
+        local font = vim.o.guifont
+        if not font:lower():match("nerd") then
+            vim.schedule(function()
+                vim.notify("⚠️ Nerd Font not detected! Icons may not display correctly.", vim.log.levels.WARN)
+            end)
+        end
+    end,
+})
+
+
+-- Force redraw and buffer reload after Telescope opens a file
+vim.api.nvim_create_autocmd("BufReadPost", {
+    callback = function()
+        if vim.fn.line("$") == 1 and vim.fn.getline(1) == "" and vim.bo.filetype == "" then
+            vim.cmd("edit!") -- Reload the file
+        end
+        vim.cmd("redraw!")   -- Force UI refresh
+    end,
+})
+
+-- Force diagnostics while typing
+vim.diagnostic.config({
+    virtual_text = true,     -- show inline
+    signs = true,            -- show in sign column
+    underline = true,        -- underline issues
+    update_in_insert = true, -- ⚠️ this is key: updates *during* insert
+    severity_sort = true,    -- sort errors > warnings > hints
+})
+
+-- Highlight on yank
+vim.api.nvim_create_autocmd("TextYankPost", {
+    callback = function()
+        vim.highlight.on_yank({ timeout = 150 })
+    end,
+})

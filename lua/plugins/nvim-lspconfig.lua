@@ -23,6 +23,9 @@ return {
         {
             "hrsh7th/cmp-nvim-lsp",
         },
+        {
+            "b0o/schemastore.nvim", -- optional: better JSON schema support
+        },
     },
 
     config = function()
@@ -30,8 +33,8 @@ return {
         local mason_lspconfig = require("mason-lspconfig")
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-        -- LSP server configurations
-        local servers = {
+        -- Server configurations
+        local server_opts = {
             lua_ls = {
                 settings = {
                     Lua = {
@@ -47,9 +50,18 @@ return {
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
-                        check = { command = "clippy" },
                         cargo = { allFeatures = true },
-                        inlayHints = { enable = true },
+                        check = { command = "clippy" },
+                        inlayHints = {
+                            enable = true,
+                            lifetimeElisionHints = {
+                                enable = true,
+                                useParameterNames = true,
+                            },
+                            typeHints = { enable = true },
+                            chainingHints = { enable = true },
+                            parameterHints = { enable = true },
+                        },
                     },
                 },
             },
@@ -73,68 +85,80 @@ return {
                     },
                 },
             },
-
             sqlls = {},
-
             omnisharp = {
-                cmd = { "omnisharp" }, -- use mason-installed `omnisharp`
+                cmd = { "omnisharp" },
                 enable_editorconfig_support = true,
                 enable_roslyn_analyzers = true,
                 organize_imports_on_format = true,
             },
-
-            tsserver = {
+            ts_ls = {
                 settings = {
                     completions = {
                         completeFunctionCalls = true,
                     },
                 },
             },
+            gopls = {
+                settings = {
+                    gopls = {
+                        usePlaceholders = true,
+                        completeUnimported = true,
+                        staticcheck = true,
+                    },
+                },
+            },
         }
 
-        -- Mapping from lspconfig server names to mason package names
-        local server_to_package = {
-            lua_ls = "lua_ls",
-            rust_analyzer = "rust_analyzer",
-            pyright = "pyright",
-            jsonls = "jsonls",
-            sqlls = "sqlls",
-            omnisharp = "omnisharp",
-            tsserver = "tsserver",
-        }
-        -- Resolve ensure_installed from servers list
+        -- Mason install needs legacy name "tsserver" instead of "ts_ls"
         local ensure_installed = {}
-        for server, _ in pairs(servers) do
-            local pkg = server_to_package[server]
-            if pkg then
-                table.insert(ensure_installed, pkg)
+        for name, _ in pairs(server_opts) do
+            if name == "ts_ls" then
+                table.insert(ensure_installed, "tsserver")
+            else
+                table.insert(ensure_installed, name)
             end
         end
 
         mason_lspconfig.setup({
             ensure_installed = ensure_installed,
             automatic_installation = false,
-            handlers = {
-                function(server_name)
-                    local opts = servers[server_name] or {}
-                    opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
-                    lspconfig[server_name].setup(opts)
-                end,
-            },
         })
 
-        -- Auto-enable inlay hints on LSP attach
+        -- Configure each server
+        for name, opts in pairs(server_opts) do
+            local lsp_name = (name == "ts_ls") and "tsserver" or name
+            opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
+            lspconfig[name].setup(opts)
+        end
+
+        -- Diagnostics (live update)
+        vim.diagnostic.config({
+            virtual_text = true,
+            signs = true,
+            underline = true,
+            update_in_insert = true,
+            severity_sort = true,
+        })
+
+        -- Inlay hints on attach
         vim.api.nvim_create_autocmd("LspAttach", {
             callback = function(args)
                 local client = vim.lsp.get_client_by_id(args.data.client_id)
-                local buf = args.buf
                 if client and client.server_capabilities.inlayHintProvider then
-                    vim.lsp.inlay_hint.enable(true)
+                    vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
                 end
             end,
         })
 
-        -- Toggle inlay hints manually with <leader>th
+        -- Optional: refresh inlay hints periodically
+        vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "InsertLeave" }, {
+            callback = function()
+                vim.lsp.inlay_hint.enable(true)
+            end,
+        })
+
+        -- Keymap: Toggle inlay hints
         vim.keymap.set("n", "<leader>th", function()
             local enabled = vim.lsp.inlay_hint.is_enabled()
             vim.lsp.inlay_hint.enable(not enabled)
