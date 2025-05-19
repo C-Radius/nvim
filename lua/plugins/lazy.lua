@@ -5,7 +5,6 @@ require("lazy").setup({
     { "easymotion/vim-easymotion" },
     { "olimorris/onedarkpro.nvim" },
     { "nvim-lua/plenary.nvim" },
-    { "windwp/nvim-autopairs" },
     { "jssee/vim-delight" },
     { "b0o/schemastore.nvim" },
 
@@ -30,4 +29,5 @@ require("lazy").setup({
     require("plugins.nvim-cmp"),
     require("plugins.nvim-ufo"),
     require("plugins.telescope"),
+    require("plugins.nvim-autopairs"),
 })
