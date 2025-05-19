@@ -24,7 +24,7 @@ return {
             "hrsh7th/cmp-nvim-lsp",
         },
         {
-            "b0o/schemastore.nvim", -- optional: better JSON schema support
+            "b0o/schemastore.nvim",
         },
     },
 
@@ -33,7 +33,8 @@ return {
         local mason_lspconfig = require("mason-lspconfig")
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-        -- Server configurations
+        _G.inlay_hints_enabled = true
+
         local server_opts = {
             lua_ls = {
                 settings = {
@@ -110,7 +111,6 @@ return {
             },
         }
 
-        -- Mason install needs legacy name "tsserver" instead of "ts_ls"
         local ensure_installed = {}
         for name, _ in pairs(server_opts) do
             if name == "ts_ls" then
@@ -125,14 +125,12 @@ return {
             automatic_installation = false,
         })
 
-        -- Configure each server
         for name, opts in pairs(server_opts) do
             local lsp_name = (name == "ts_ls") and "tsserver" or name
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
-            lspconfig[name].setup(opts)
+            lspconfig[lsp_name].setup(opts)
         end
 
-        -- Diagnostics (live update)
         vim.diagnostic.config({
             virtual_text = true,
             signs = true,
@@ -141,27 +139,28 @@ return {
             severity_sort = true,
         })
 
-        -- Inlay hints on attach
         vim.api.nvim_create_autocmd("LspAttach", {
             callback = function(args)
                 local client = vim.lsp.get_client_by_id(args.data.client_id)
                 if client and client.server_capabilities.inlayHintProvider then
-                    vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+                    if _G.inlay_hints_enabled then
+                        vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
+                    end
                 end
             end,
         })
 
-        -- Optional: refresh inlay hints periodically
         vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "InsertLeave" }, {
             callback = function()
-                vim.lsp.inlay_hint.enable(true)
+                if _G.inlay_hints_enabled then
+                    vim.lsp.inlay_hint.enable(true)
+                end
             end,
         })
 
-        -- Keymap: Toggle inlay hints
         vim.keymap.set("n", "<leader>th", function()
-            local enabled = vim.lsp.inlay_hint.is_enabled()
-            vim.lsp.inlay_hint.enable(not enabled)
+            _G.inlay_hints_enabled = not _G.inlay_hints_enabled
+            vim.lsp.inlay_hint.enable(_G.inlay_hints_enabled)
         end, { desc = "Toggle Inlay Hints" })
     end,
 }

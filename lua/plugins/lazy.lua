@@ -30,4 +30,6 @@ require("lazy").setup({
     require("plugins.nvim-ufo"),
     require("plugins.telescope"),
     require("plugins.nvim-autopairs"),
+    require("plugins.aerial"),
+    require("plugins.neotest"),
 })
