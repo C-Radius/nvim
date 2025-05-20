@@ -1,7 +1,6 @@
 -- Plugin setup
 require("lazy").setup({
     -- Plain plugins
-    { "Vigemus/iron.nvim" },
     { "easymotion/vim-easymotion" },
     { "olimorris/onedarkpro.nvim" },
     { "nvim-lua/plenary.nvim" },
@@ -18,7 +17,6 @@ require("lazy").setup({
     --require("plugins.coc"),
     require("plugins.toggleterm"),
     require("plugins.mini-surround"),
-    require("plugins.lualine"),
     require("plugins.dashboard-nvim"),
     require("plugins.notify"),
     require("plugins.fidget"),
@@ -31,5 +29,8 @@ require("lazy").setup({
     require("plugins.telescope"),
     require("plugins.nvim-autopairs"),
     require("plugins.aerial"),
-    require("plugins.neotest"),
+    require("plugins.neotest"), -- For running tests
+    require("plugins.iron-nvim"),
+
+    require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
 })

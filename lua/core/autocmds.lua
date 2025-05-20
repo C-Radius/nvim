@@ -172,3 +172,16 @@ vim.api.nvim_create_autocmd("TextYankPost", {
         vim.highlight.on_yank({ timeout = 150 })
     end,
 })
+
+-- Change working directory to file's dir.
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufWinEnter" }, {
+    pattern = "*",
+    callback = function()
+        if vim.bo.buftype == "" and vim.fn.bufname() ~= "" then
+            local dir = vim.fn.expand("%:p:h")
+            if vim.fn.isdirectory(dir) == 1 then
+                vim.cmd("tcd " .. dir)
+            end
+        end
+    end,
+})
