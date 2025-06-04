@@ -31,6 +31,6 @@ require("lazy").setup({
     require("plugins.aerial"),
     require("plugins.neotest"), -- For running tests
     require("plugins.iron-nvim"),
-
+    require("plugins.nvim-dbee"),
     require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
 })
