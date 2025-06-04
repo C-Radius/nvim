@@ -99,6 +99,9 @@ return {
                         completeFunctionCalls = true,
                     },
                 },
+                on_attach = function(client)
+                    client.server_capabilities.documentFormattingProvider = false
+                end,
             },
             gopls = {
                 settings = {
@@ -111,11 +114,10 @@ return {
             },
         }
 
+        -- only include servers that are not ts_ls (manual install)
         local ensure_installed = {}
         for name, _ in pairs(server_opts) do
-            if name == "ts_ls" then
-                table.insert(ensure_installed, "tsserver")
-            else
+            if name ~= "ts_ls" then
                 table.insert(ensure_installed, name)
             end
         end
@@ -126,9 +128,9 @@ return {
         })
 
         for name, opts in pairs(server_opts) do
-            local lsp_name = (name == "ts_ls") and "tsserver" or name
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
-            lspconfig[lsp_name].setup(opts)
+            -- ts_ls is passed directly here, not renamed to tsserver
+            lspconfig[name].setup(opts)
         end
 
         vim.diagnostic.config({
