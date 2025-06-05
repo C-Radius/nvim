@@ -1,6 +1,7 @@
 return {
     "Vigemus/iron.nvim",
     ft = { "python", "lua", "rust" },
+    event = "VeryLazy",
     config = function()
         local iron = require("iron.core")
         local view = require("iron.view")

@@ -51,6 +51,15 @@ return {
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
+                        completion = {
+                            autoimport = {
+                                true
+                            },
+                        },
+                        assist = {
+                            importGranularity = "module",
+                            importPrefix = "by_self",
+                        },
                         cargo = { allFeatures = true },
                         check = { command = "clippy" },
                         inlayHints = {

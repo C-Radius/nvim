@@ -1,6 +1,7 @@
 return {
     "jiaoshijie/undotree",
     dependencies = { "nvim-lua/plenary.nvim" },
+    event = "VeryLazy",
     config = function()
         require('undotree').setup({
             float_diff = true,      -- using float window previews diff, set this `true` will disable layout option

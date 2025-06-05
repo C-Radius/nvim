@@ -5,6 +5,7 @@ return {
         "nvim-treesitter/nvim-treesitter",
         "nvim-lualine/lualine.nvim"
     },
+    event = "VeryLazy",
     opts = {
         layout = {
             default_direction = "prefer_right",

@@ -1,12 +1,13 @@
 return {
     "akinsho/toggleterm.nvim",
     version = "*",
+    event = "VeryLazy",
     config = function()
         require("toggleterm").setup({
             size = 10,
             open_mapping = [[<C-\>]],
             start_in_insert = true,
-            direction = "vertical",
+            direction = "float",
             shell = "powershell.exe",
             float_opts = {
                 border = "curved",

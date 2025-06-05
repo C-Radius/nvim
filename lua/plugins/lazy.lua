@@ -19,6 +19,7 @@ require("lazy").setup({
     require("plugins.window-picker"),
     require("plugins.which-key"),
     require("plugins.treesitter"),
+    require("plugins.rainbow-delimiters"),
     require("plugins.neotree"),
     require("plugins.undotree"),
     --require("plugins.coc"),
