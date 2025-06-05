@@ -6,7 +6,14 @@ require("lazy").setup({
     { "nvim-lua/plenary.nvim" },
     { "jssee/vim-delight" },
     { "b0o/schemastore.nvim" },
-
+    { "folke/neodev.nvim" },
+    {
+        "lukas-reineke/indent-blankline.nvim",
+        main = "ibl",
+        ---@module "ibl"
+        ---@type ibl.config
+        opts = {},
+    },
     -- Configured plugins
     require("plugins.github-nvim-theme"),
     require("plugins.window-picker"),
@@ -31,6 +38,6 @@ require("lazy").setup({
     require("plugins.aerial"),
     require("plugins.neotest"), -- For running tests
     require("plugins.iron-nvim"),
-    require("plugins.nvim-dbee"),
     require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
+    require("plugins.bufferline")
 })
