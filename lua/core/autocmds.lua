@@ -1,13 +1,23 @@
 -- Relativenumber toggle
-vim.api.nvim_exec(
-    [[
-  augroup numbertoggle
-    autocmd!
-    autocmd BufEnter,FocusGained,InsertLeave * set relativenumber
-    autocmd BufLeave,FocusLost,InsertEnter * set norelativenumber
-  augroup END
-]],
-    false
+
+local group = vim.api.nvim_create_augroup("numbertoggle", { clear = true })
+
+vim.api.nvim_create_autocmd(
+    { "BufEnter", "FocusGained", "InsertLeave" },
+    {
+        group = group,
+        pattern = "*",
+        command = "set relativenumber",
+    }
+)
+
+vim.api.nvim_create_autocmd(
+    { "BufLeave", "FocusLost", "InsertEnter" },
+    {
+        group = group,
+        pattern = "*",
+        command = "set norelativenumber",
+    }
 )
 
 
@@ -33,7 +43,7 @@ local function detect_project_venv()
         local path_sep = package.config:sub(1, 1) -- Path separator ('/' or '\')
         local dir = start_dir
 
-        while dir do
+        while dir and dir ~= "" do
             local venv_dirs = {
                 dir .. path_sep .. "venv",
                 dir .. path_sep .. ".venv",
@@ -41,8 +51,10 @@ local function detect_project_venv()
             }
 
             for _, venv in ipairs(venv_dirs) do
-                local python_exec = venv .. path_sep .. "Scripts" .. path_sep .. "python.exe" -- Windows
-                if vim.fn.has("win32") == 0 then
+                local python_exec
+                if vim.fn.has("win32") == 1 then
+                    python_exec = venv .. path_sep .. "Scripts" .. path_sep .. "python.exe"
+                else
                     python_exec = venv .. path_sep .. "bin" .. path_sep .. "python"
                 end
 
@@ -53,21 +65,19 @@ local function detect_project_venv()
 
             -- Move up to the parent directory
             local parent_dir = vim.fn.fnamemodify(dir, ":h")
-            if parent_dir == dir then
-                break
-            end
+            if parent_dir == dir then break end
             dir = parent_dir
         end
+
         return nil
     end
 
-    -- Get the directory of the file opened in Neovide or fallback to cwd
+    -- Get the directory of the current file, fallback to working directory
     local file_dir = vim.fn.expand("%:p:h")
-    if vim.fn.empty(file_dir) == 1 then
-        file_dir = vim.loop.cwd()
+    if file_dir == "" then
+        file_dir = vim.fn.getcwd()
     end
 
-    -- Find and return the virtual environment Python path
     return find_venv(file_dir)
 end
 
@@ -111,12 +121,12 @@ local function darken_color(hex, amount)
 end
 
 local function set_custom_ui()
-    -- Get Normal highlight group
-    local ok, normal_hl = pcall(vim.api.nvim_get_hl_by_name, "Normal", true)
-    if not ok or not normal_hl.background then return end
+    -- Get Normal highlight group using the modern API
+    local ok, normal_hl = pcall(vim.api.nvim_get_hl, 0, { name = "Normal" })
+    if not ok or not normal_hl.bg then return end
 
     -- Convert to hex
-    local bg = string.format("#%06x", normal_hl.background)
+    local bg = string.format("#%06x", normal_hl.bg)
     local darker_bg = darken_color(bg, 0.18) -- ~18% darker
 
     -- Apply highlights

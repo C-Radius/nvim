@@ -44,6 +44,8 @@ end
 
 -- First of all make sure lazy is installed, if not, install it
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
+---@diagnostic disable-next-line: undefined-field --This dcorator silences a warning about fs_stat not existing. It does on runtime.
 if not vim.loop.fs_stat(lazypath) then
     print("Installing lazy.nvim...")
     vim.fn.system({

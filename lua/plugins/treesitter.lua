@@ -4,13 +4,19 @@ return {
     dependencies = {
         "nvim-treesitter/nvim-treesitter-textobjects",
         "nvim-treesitter/playground",
-        "dariuscorvus/tree-sitter-language-injection.nvim"
+        "dariuscorvus/tree-sitter-language-injection.nvim",
     },
     config = function()
         -- Use Zig instead of GCC/Clang on Windows
         require("nvim-treesitter.install").compilers = { "zig" }
 
         require("nvim-treesitter.configs").setup({
+            -- Required to satisfy TSConfig type
+            modules = {},
+            sync_install = false,
+            auto_install = true,
+            ignore_install = {},
+
             ensure_installed = {
                 "query", "lua", "python", "javascript", "html", "css", "sql", "c", "rust"
             },
@@ -100,5 +106,5 @@ return {
                 lint_events = { "BufWrite", "CursorHold" },
             },
         })
-    end
+    end,
 }
