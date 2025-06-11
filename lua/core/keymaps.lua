@@ -39,3 +39,6 @@ keymap("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostics (
 keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
 keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open location list with diagnostics" })
+
+-- Keybinding to move inside lsp doc pop up and in general to move to next split
+keymap("n", "<leader>w", "<C-w>w", {})

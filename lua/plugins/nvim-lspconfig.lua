@@ -138,7 +138,30 @@ return {
 
         for name, opts in pairs(server_opts) do
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
-            -- ts_ls is passed directly here, not renamed to tsserver
+
+            -- Inject on_attach without overwriting per-server custom on_attach
+            local existing_attach = opts.on_attach
+            opts.on_attach = function(client, bufnr)
+                if existing_attach then
+                    existing_attach(client, bufnr)
+                end
+
+                local map = function(mode, lhs, rhs, desc)
+                    vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
+                end
+
+                map("n", "gd", vim.lsp.buf.definition, "Go to Definition")
+                map("n", "gD", vim.lsp.buf.declaration, "Go to Declaration")
+                map("n", "gi", vim.lsp.buf.implementation, "Go to Implementation")
+                map("n", "gr", vim.lsp.buf.references, "Go to References")
+                map("n", "K", vim.lsp.buf.hover, "Hover")
+                map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
+                map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
+                map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
+                map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
+                map("n", "<C-]>", vim.lsp.buf.definition, "Jump to Definition (LSP)")
+            end
+
             lspconfig[name].setup(opts)
         end
 
