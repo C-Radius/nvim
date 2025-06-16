@@ -37,7 +37,8 @@ return {
                     sync_with_nvim_tree = true,
                     on_project_selected = function(prompt_bufnr)
                         project_actions.change_working_directory(prompt_bufnr, false)
-                        vim.cmd("Neotree dir=" .. vim.fn.getcwd())
+                        local selected_dir = vim.fn.getcwd()
+                        vim.cmd("Neotree dir=" .. selected_dir)
                     end,
                     mappings = {
                         n = {
@@ -78,7 +79,7 @@ return {
         pcall(telescope.load_extension, 'media_files')
         pcall(telescope.load_extension, 'github')
 
-        -- Project-root-aware file search
+        -- Project-root-aware file search using Git
         vim.keymap.set("n", "<leader>ff", function()
             local file_path = vim.api.nvim_buf_get_name(0)
             local file_dir = vim.fn.fnamemodify(file_path, ":h")
@@ -88,9 +89,9 @@ return {
             else
                 builtin.find_files()
             end
-        end, { desc = "Find files in project root of current file" })
+        end, { desc = "Find files in git root" })
 
-        -- Project-root-aware live grep
+        -- Git-root-aware live grep
         vim.keymap.set("n", "<leader>fg", function()
             local file_path = vim.api.nvim_buf_get_name(0)
             local file_dir = vim.fn.fnamemodify(file_path, ":h")
@@ -100,7 +101,7 @@ return {
             else
                 builtin.live_grep()
             end
-        end, { desc = "Grep in project root of current file" })
+        end, { desc = "Grep in git root" })
 
         vim.keymap.set('n', '<leader>fb', builtin.buffers, { desc = 'Telescope buffers' })
         vim.keymap.set('n', '<leader>fh', builtin.help_tags, { desc = 'Telescope help tags' })
