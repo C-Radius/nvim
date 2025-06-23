@@ -26,12 +26,16 @@ return {
         {
             "b0o/schemastore.nvim",
         },
+        {
+            "Hoffs/omnisharp-extended-lsp.nvim", -- Needed for proper C# definitions
+        },
     },
 
     config = function()
         local lspconfig = require("lspconfig")
         local mason_lspconfig = require("mason-lspconfig")
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
+        local omnisharp_extended = require("omnisharp_extended")
 
         _G.inlay_hints_enabled = true
 
@@ -51,11 +55,7 @@ return {
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
-                        completion = {
-                            autoimport = {
-                                true
-                            },
-                        },
+                        completion = { autoimport = { true } },
                         assist = {
                             importGranularity = "module",
                             importPrefix = "by_self",
@@ -97,10 +97,32 @@ return {
             },
             sqlls = {},
             omnisharp = {
-                cmd = { "omnisharp" },
                 enable_editorconfig_support = true,
                 enable_roslyn_analyzers = true,
                 organize_imports_on_format = true,
+                enable_import_completion = true,
+                handlers = {
+                    ["textDocument/definition"] = omnisharp_extended.handler,
+                },
+                on_attach = function(client, bufnr)
+                    -- Enable semantic tokens
+                    if client.server_capabilities.semanticTokensProvider and client.server_capabilities.semanticTokensProvider.full then
+                        local augroup = vim.api.nvim_create_augroup("SemanticTokens", {})
+                        vim.api.nvim_create_autocmd("TextChanged", {
+                            group = augroup,
+                            buffer = bufnr,
+                            callback = function()
+                                client.request("textDocument/semanticTokens/full", {
+                                    textDocument = { uri = vim.uri_from_bufnr(bufnr) },
+                                }, function(_, result, ctx)
+                                    if result and ctx then
+                                        vim.lsp.semantic_tokens.on_full(_, result, ctx)
+                                    end
+                                end)
+                            end,
+                        })
+                    end
+                end,
             },
             ts_ls = {
                 settings = {
@@ -123,7 +145,6 @@ return {
             },
         }
 
-        -- only include servers that are not ts_ls (manual install)
         local ensure_installed = {}
         for name, _ in pairs(server_opts) do
             if name ~= "ts_ls" then
@@ -139,7 +160,6 @@ return {
         for name, opts in pairs(server_opts) do
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
 
-            -- Inject on_attach without overwriting per-server custom on_attach
             local existing_attach = opts.on_attach
             opts.on_attach = function(client, bufnr)
                 if existing_attach then
