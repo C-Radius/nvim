@@ -37,10 +37,10 @@ return {
                 ["<C-n>"] = cmp.mapping.select_next_item(),
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
 
-                -- Use tab ONLY for snippets (not for completion cycling!)
+                -- Use tab ONLY to jump in snippets, not to expand
                 ["<Tab>"] = cmp.mapping(function(fallback)
-                    if luasnip.expand_or_jumpable() then
-                        luasnip.expand_or_jump()
+                    if luasnip.jumpable(1) then
+                        luasnip.jump(1)
                     else
                         fallback()
                     end

@@ -55,7 +55,10 @@ return {
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
-                        completion = { autoimport = { true } },
+                        completion = {
+                            autoimport = { true },
+                            callable = { snippets = "none" }, -- 🔥 Prevents snippet-based insertText
+                        },
                         assist = {
                             importGranularity = "module",
                             importPrefix = "by_self",
@@ -76,6 +79,11 @@ return {
                 },
             },
             pyright = {
+                on_init = function(client)
+                    client.config.settings = client.config.settings or {}
+                    client.config.settings.python = client.config.settings.python or {}
+                    client.config.settings.python.pythonPath = vim.g.project_python or "python"
+                end,
                 settings = {
                     python = {
                         analysis = {
@@ -105,7 +113,6 @@ return {
                     ["textDocument/definition"] = omnisharp_extended.handler,
                 },
                 on_attach = function(client, bufnr)
-                    -- Enable semantic tokens
                     if client.server_capabilities.semanticTokensProvider and client.server_capabilities.semanticTokensProvider.full then
                         local augroup = vim.api.nvim_create_augroup("SemanticTokens", {})
                         vim.api.nvim_create_autocmd("TextChanged", {
