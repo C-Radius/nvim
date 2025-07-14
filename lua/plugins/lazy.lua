@@ -13,14 +13,13 @@ require("lazy").setup({
         opts = {},
     },
     -- Configured plugins
-    require("plugins.github-nvim-theme"),
+    require("plugins.onedark"),
     require("plugins.window-picker"),
     require("plugins.which-key"),
     require("plugins.treesitter"),
     require("plugins.rainbow-delimiters"),
     require("plugins.neotree"),
     require("plugins.undotree"),
-    --require("plugins.coc"),
     require("plugins.toggleterm"),
     require("plugins.mini-surround"),
     require("plugins.dashboard-nvim"),
@@ -38,5 +37,5 @@ require("lazy").setup({
     require("plugins.neotest"), -- For running tests
     require("plugins.iron-nvim"),
     require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
-    require("plugins.bufferline")
+    require("plugins.crates-nvim")
 })
