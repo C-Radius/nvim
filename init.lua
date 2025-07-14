@@ -39,7 +39,7 @@ end
 vim.g.neovide_cursor_vfx_mode = "pixiedust"
 -- Set neovide fonts
 if vim.g.neovide then
-    vim.opt.guifont = "FiraCode Nerd Font:h11"
+    vim.opt.guifont = "FiraCode Nerd Font:h10"
 end
 
 -- First of all make sure lazy is installed, if not, install it

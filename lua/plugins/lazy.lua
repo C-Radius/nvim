@@ -13,7 +13,8 @@ require("lazy").setup({
         opts = {},
     },
     -- Configured plugins
-    require("plugins.onedark"),
+    require("plugins.onedarkpro"),
+    require("plugins.indent-blankline"),
     require("plugins.window-picker"),
     require("plugins.which-key"),
     require("plugins.treesitter"),
