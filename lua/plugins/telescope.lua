@@ -19,7 +19,27 @@ return {
         local action_state = require("telescope.actions.state")
         local builtin = require("telescope.builtin")
 
+        ---- Check for rg or fd exectuables existence.
+        local function check_dependency(cmd, name, url)
+            if vim.fn.executable(cmd) ~= 1 then
+                vim.schedule(function()
+                    vim.notify(
+                        string.format(
+                            "[Telescope] Missing dependency: %s\nDownload: %s\n\nIf you already have the executable, you can just put it in your Neovide or nvim directory (which are already in your PATH).",
+                            name, url
+                        ),
+                        vim.log.levels.WARN,
+                        { title = "Telescope Dependency" }
+                    )
+                end)
+            end
+        end
+        ----
+
+        check_dependency("fd", "fd (a fast file finder)", "https://github.com/sharkdp/fd")
+        check_dependency("rg", "ripgrep (rg)", "https://github.com/BurntSushi/ripgrep")
         telescope.setup({
+
             extensions = {
                 project = {
                     base_dirs = {
