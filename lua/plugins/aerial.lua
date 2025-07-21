@@ -18,6 +18,6 @@ return {
     },
     config = function(_, opts)
         require("aerial").setup(opts)
-        require("telescope").load_extension("aerial") -- 👈 This loads the Telescope extension
+        require("telescope").load_extension("aerial")
     end,
 }

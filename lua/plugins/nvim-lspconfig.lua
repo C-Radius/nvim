@@ -3,7 +3,6 @@ return {
     dependencies = {
         {
             "williamboman/mason.nvim",
-            version = "1.8.3",
             config = function()
                 require("mason").setup({
                     ui = {
@@ -18,17 +17,10 @@ return {
         },
         {
             "williamboman/mason-lspconfig.nvim",
-            version = "1.29.0",
         },
-        {
-            "hrsh7th/cmp-nvim-lsp",
-        },
-        {
-            "b0o/schemastore.nvim",
-        },
-        {
-            "Hoffs/omnisharp-extended-lsp.nvim", -- Needed for proper C# definitions
-        },
+        { "hrsh7th/cmp-nvim-lsp" },
+        { "b0o/schemastore.nvim" },
+        { "Hoffs/omnisharp-extended-lsp.nvim" },
     },
 
     config = function()
@@ -57,7 +49,7 @@ return {
                     ["rust-analyzer"] = {
                         completion = {
                             autoimport = { true },
-                            callable = { snippets = "none" }, -- 🔥 Prevents snippet-based insertText
+                            callable = { snippets = "none" },
                         },
                         assist = {
                             importGranularity = "module",
@@ -79,11 +71,6 @@ return {
                 },
             },
             pyright = {
-                on_init = function(client)
-                    client.config.settings = client.config.settings or {}
-                    client.config.settings.python = client.config.settings.python or {}
-                    client.config.settings.python.pythonPath = vim.g.project_python or "python"
-                end,
                 settings = {
                     python = {
                         analysis = {
@@ -94,6 +81,8 @@ return {
                         },
                     },
                 },
+            },
+            ruff = {
             },
             jsonls = {
                 settings = {
@@ -152,6 +141,7 @@ return {
             },
         }
 
+        -- List of LSPs to install
         local ensure_installed = {}
         for name, _ in pairs(server_opts) do
             if name ~= "ts_ls" then
@@ -164,6 +154,7 @@ return {
             automatic_installation = false,
         })
 
+        -- LSP server setup
         for name, opts in pairs(server_opts) do
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
 
@@ -187,6 +178,12 @@ return {
                 map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
                 map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
                 map("n", "<C-]>", vim.lsp.buf.definition, "Jump to Definition (LSP)")
+                -- Ruff fix all, only in Python
+                if name == "ruff" then
+                    map("n", "<leader>rf", function()
+                        vim.lsp.buf.code_action({ apply = true, context = { only = { "source.fixAll" } } })
+                    end, "Ruff: Fix all")
+                end
             end
 
             lspconfig[name].setup(opts)

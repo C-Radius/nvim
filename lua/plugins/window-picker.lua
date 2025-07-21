@@ -2,7 +2,7 @@ return {
     's1n7ax/nvim-window-picker',
     name = 'window-picker',
     event = 'VeryLazy',
-    version = '2.*',
+    version = '*',
     config = function ()
         require 'window-picker'.setup({
             -- type of hints you want to get

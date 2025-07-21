@@ -12,7 +12,7 @@
 -- Configuration target version
 -- Check if current nvim version is compatible with the version these config files were setup for.
 -----------------------------------------------------------------------------------------------------------
-local required_nvim_version = "0.10.4"
+local required_nvim_version = "0.11.3"
 
 -- Get current version table: { major, minor, patch }
 local actual = vim.version()

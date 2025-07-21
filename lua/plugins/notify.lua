@@ -1,9 +1,23 @@
 return {
     "rcarriga/nvim-notify",
     config = function()
+        -- Universal notify patch for 2 or 3 arguments
+        vim.notify = function(msg, level, opts)
+            local notify = package.loaded["notify"] or require("notify")
+            if notify then
+                if opts ~= nil then
+                    notify(msg, level, opts)
+                else
+                    notify(msg, level)
+                end
+            else
+                vim.api.nvim_echo({ { msg } }, true, {})
+            end
+        end
+
         local notify = require("notify")
 
-        -- Override vim.notify with nvim-notify
+        -- Now override vim.notify with nvim-notify (still safe due to patch)
         vim.notify = notify
 
         notify.setup({

@@ -1,5 +1,6 @@
 -- Plugin setup
 require("lazy").setup({
+    require("plugins.notify"), -- Has to be first because ... breaking changes all the fucking time
     -- Plain plugins
     { "easymotion/vim-easymotion" },
     { "olimorris/onedarkpro.nvim" },
@@ -24,7 +25,6 @@ require("lazy").setup({
     require("plugins.toggleterm"),
     require("plugins.mini-surround"),
     require("plugins.dashboard-nvim"),
-    require("plugins.notify"),
     require("plugins.fidget"),
     require("plugins.flash"),
     require("plugins.dressing"),
