@@ -13,7 +13,7 @@ require("lazy").setup({
         opts = {},
     },
     -- Configured plugins
-    require("plugins.commen-nvim"),
+    require("plugins.comment-nvim"),
     require("plugins.onedarkpro"),
     require("plugins.indent-blankline"),
     require("plugins.window-picker"),
