@@ -2,7 +2,6 @@
 require("lazy").setup({
     require("plugins.notify"), -- Has to be first because ... breaking changes all the fucking time
     -- Plain plugins
-    { "easymotion/vim-easymotion" },
     { "olimorris/onedarkpro.nvim" },
     { "nvim-lua/plenary.nvim" },
     { "jssee/vim-delight" },
@@ -14,6 +13,7 @@ require("lazy").setup({
         opts = {},
     },
     -- Configured plugins
+    require("plugins.commen-nvim"),
     require("plugins.onedarkpro"),
     require("plugins.indent-blankline"),
     require("plugins.window-picker"),
