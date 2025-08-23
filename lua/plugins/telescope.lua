@@ -19,7 +19,17 @@ return {
         local action_state = require("telescope.actions.state")
         local builtin = require("telescope.builtin")
 
-        ---- Check for rg or fd exectuables existence.
+        -- Determine a persistent projects file path outside stdpath("data")
+        local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
+        local home = is_windows and os.getenv("USERPROFILE") or os.getenv("HOME")
+        local projects_file = is_windows
+            and (home .. "\\Documents\\nvim\\telescope-projects.txt")
+            and (home .. "/.local/share/telescope-projects.txt")
+
+        -- Ensure directory exists
+        vim.fn.mkdir(vim.fn.fnamemodify(projects_file, ":h"), "p")
+
+        ---- Check for rg or fd executables
         local function check_dependency(cmd, name, url)
             if vim.fn.executable(cmd) ~= 1 then
                 vim.schedule(function()
@@ -34,14 +44,15 @@ return {
                 end)
             end
         end
-        ----
-
         check_dependency("fd", "fd (a fast file finder)", "https://github.com/sharkdp/fd")
         check_dependency("rg", "ripgrep (rg)", "https://github.com/BurntSushi/ripgrep")
-        telescope.setup({
 
+        telescope.setup({
             extensions = {
                 project = {
+                    -- Persist list here so deleting nvim-data won't wipe it
+                    datapath = projects_file,
+
                     base_dirs = {
                         '~/dev/src',
                         { '~/dev/src2' },
