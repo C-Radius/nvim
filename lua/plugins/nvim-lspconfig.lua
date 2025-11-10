@@ -23,7 +23,6 @@ return {
     },
 
     config = function()
-        local lspconfig = require("lspconfig")
         local mason_lspconfig = require("mason-lspconfig")
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
         local omnisharp_extended = require("omnisharp_extended")
@@ -34,7 +33,7 @@ return {
 
         _G.inlay_hints_enabled = true
 
-        -- Per‑server options only. No setup() calls here.
+        -- Per-server options only. No setup() calls here.
         local server_opts = {
             lua_ls = {
                 cmd = { mason_bin .. "lua-language-server.CMD" }, -- pin to Mason
@@ -111,7 +110,7 @@ return {
                             group = augroup,
                             buffer = bufnr,
                             callback = function()
-                                client.request("textDocument/semanticTokens/full", {
+                                client:request("textDocument/semanticTokens/full", {
                                     textDocument = { uri = vim.uri_from_bufnr(bufnr) },
                                 }, function(_, result, ctx)
                                     if result and ctx then
@@ -137,7 +136,9 @@ return {
             -- Not managed by Mason in your list, set up manually later.
             ts_ls = {
                 settings = { completions = { completeFunctionCalls = true } },
-                on_attach = function(client) client.server_capabilities.documentFormattingProvider = false end,
+                on_attach = function(client)
+                    client.server_capabilities.documentFormattingProvider = false
+                end,
             },
         }
 
@@ -148,6 +149,7 @@ return {
                 local map = function(mode, lhs, rhs, desc)
                     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
                 end
+
                 map("n", "gd", vim.lsp.buf.definition, "Go to Definition")
                 map("n", "gD", vim.lsp.buf.declaration, "Go to Declaration")
                 map("n", "gi", vim.lsp.buf.implementation, "Go to Implementation")
@@ -158,9 +160,13 @@ return {
                 map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
                 map("n", "<leader>f", function() vim.lsp.buf.format({ async = true }) end, "Format")
                 map("n", "<C-]>", vim.lsp.buf.definition, "Jump to Definition (LSP)")
+
                 if name == "ruff" then
                     map("n", "<leader>rf", function()
-                        vim.lsp.buf.code_action({ apply = true, context = { only = { "source.fixAll" } } })
+                        vim.lsp.buf.code_action({
+                            apply = true,
+                            context = { only = { "source.fixAll" } },
+                        })
                     end, "Ruff: Fix all")
                 end
             end
@@ -180,7 +186,10 @@ return {
                     local opts = server_opts[server] or {}
                     opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
                     opts.on_attach = with_on_attach(server, opts.on_attach)
-                    lspconfig[server].setup(opts)
+
+                    -- New API: define + enable
+                    vim.lsp.config(server, opts)
+                    vim.lsp.enable(server)
                 end,
             })
         else
@@ -189,16 +198,20 @@ return {
                 local opts = server_opts[server] or {}
                 opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
                 opts.on_attach = with_on_attach(server, opts.on_attach)
-                lspconfig[server].setup(opts)
+
+                vim.lsp.config(server, opts)
+                vim.lsp.enable(server)
             end
         end
 
-        -- Non‑Mason server(s)
+        -- Non-Mason server(s)
         if server_opts.ts_ls then
             local opts = server_opts.ts_ls
             opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
             opts.on_attach = with_on_attach("ts_ls", opts.on_attach)
-            lspconfig.ts_ls.setup(opts)
+
+            vim.lsp.config("ts_ls", opts)
+            vim.lsp.enable("ts_ls")
         end
 
         -- Diagnostics and inlay hints
@@ -221,7 +234,9 @@ return {
 
         vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "InsertLeave" }, {
             callback = function()
-                if _G.inlay_hints_enabled then vim.lsp.inlay_hint.enable(true) end
+                if _G.inlay_hints_enabled then
+                    vim.lsp.inlay_hint.enable(true)
+                end
             end,
         })
 
