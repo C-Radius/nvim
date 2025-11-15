@@ -83,17 +83,20 @@ vim.diagnostic.config({
     severity_sort = true,
 })
 
--- Custom diagnostic signs
-vim.schedule(function()
-    local signs = {
-        Error = "", -- \uf057
-        Warn  = "", -- \uf071
-        Hint  = "", -- \uf05a
-        Info  = "", -- \uf059
-    }
-
-    for type, icon in pairs(signs) do
-        local hl = "DiagnosticSign" .. type
-        vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = hl })
-    end
-end)
+-- Custom diagnostic signs (Neovim 0.11+ API)
+vim.diagnostic.config({
+    signs = {
+        text = {
+            [vim.diagnostic.severity.ERROR] = "",
+            [vim.diagnostic.severity.WARN]  = "",
+            [vim.diagnostic.severity.HINT]  = "",
+            [vim.diagnostic.severity.INFO]  = "",
+        },
+        numhl = {
+            [vim.diagnostic.severity.ERROR] = "DiagnosticSignError",
+            [vim.diagnostic.severity.WARN]  = "DiagnosticSignWarn",
+            [vim.diagnostic.severity.HINT]  = "DiagnosticSignHint",
+            [vim.diagnostic.severity.INFO]  = "DiagnosticSignInfo",
+        },
+    },
+})
