@@ -40,5 +40,6 @@ require("lazy").setup({
     require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
     require("plugins.crates-nvim"),
     require("plugins.csvview"),
-    require("plugins.arduino-nvim")
+    require("plugins.arduino-nvim"),
+    require("plugins.venv-selector"),
 })

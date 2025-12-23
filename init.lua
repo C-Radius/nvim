@@ -74,16 +74,6 @@ end
 
 -- Environment variables
 vim.g.polyglot_disabled = { "markdown" }
-vim.env.NVIM_PYTHON_LOG_FILE = "C:\\nvim.log" -- Set location for NVIM log file.
-
--- Enable Python Support by determining the Python path
-if vim.fn.has("win32") == 1 then
-    vim.g.python_host_prog = "C:\\Program Files\\python310\\python.exe"
-    vim.g.python3_host_prog = "C:\\Program Files\\Python310\\python3.exe"
-else
-    vim.g.python_host_prog = "/usr/bin/python2"
-    vim.g.python3_host_prog = "/usr/bin/python3"
-end
 
 -- This is the main configuration file for Neovim, which loads all the necessary modules and plugins.
 require("core.options")
