@@ -20,16 +20,49 @@ return {
         { "hrsh7th/cmp-nvim-lsp" },
         { "b0o/schemastore.nvim" },
         { "Hoffs/omnisharp-extended-lsp.nvim" },
+        {
+            "ray-x/lsp_signature.nvim",
+            event = "VeryLazy",
+            opts = {
+                bind = true,
+                floating_window = true,
+                floating_window_above_cur_line = false,
+                hint_enable = false,
+                handler_opts = {
+                    border = "rounded",
+                },
+                max_height = 12,
+                max_width = 100,
+                doc_lines = 10,
+                padding = " ",
+                transparency = nil,
+                toggle_key = "<M-x>",
+            },
+        },
     },
+
     config = function()
         local mason_lspconfig = require("mason-lspconfig")
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
         local omnisharp_extended = require("omnisharp_extended")
         local python_env = require("utils.python_env")
+        local lsp_signature = require("lsp_signature")
 
         local inlay_hints_enabled = true
 
-        local function apply_pyright_python(config, root_dir)
+        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+            border = "rounded",
+            max_width = 100,
+            max_height = 30,
+        })
+
+        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+            border = "rounded",
+            max_width = 100,
+            max_height = 20,
+        })
+
+        local function apply_python_path(config, root_dir)
             config.settings = config.settings or {}
             config.settings.python = config.settings.python or {}
             config.settings.python.pythonPath = python_env.preferred_python(root_dir)
@@ -75,11 +108,25 @@ return {
             lua_ls = {
                 settings = {
                     Lua = {
-                        completion = { callSnippet = "Replace" },
-                        diagnostics = { globals = { "vim" } },
+                        completion = {
+                            callSnippet = "Replace",
+                        },
+                        diagnostics = {
+                            globals = { "vim" },
+                        },
+                        hint = {
+                            enable = true,
+                            arrayIndex = "Enable",
+                            await = true,
+                            paramName = "All",
+                            paramType = true,
+                            semicolon = "Disable",
+                            setType = true,
+                        },
                     },
                 },
             },
+
             rust_analyzer = {
                 settings = {
                     ["rust-analyzer"] = {
@@ -91,22 +138,33 @@ return {
                             importGranularity = "module",
                             importPrefix = "by_self",
                         },
-                        cargo = { allFeatures = true },
-                        check = { command = "clippy" },
+                        cargo = {
+                            allFeatures = true,
+                        },
+                        check = {
+                            command = "clippy",
+                        },
                         inlayHints = {
                             enable = true,
                             lifetimeElisionHints = {
                                 enable = true,
                                 useParameterNames = true,
                             },
-                            typeHints = { enable = true },
-                            chainingHints = { enable = true },
-                            parameterHints = { enable = true },
+                            typeHints = {
+                                enable = true,
+                            },
+                            chainingHints = {
+                                enable = true,
+                            },
+                            parameterHints = {
+                                enable = true,
+                            },
                         },
                     },
                 },
             },
-            pyright = {
+
+            basedpyright = {
                 root_dir = function(bufnr, on_dir)
                     local path = python_env.resolve_path_input(bufnr)
                     local root = python_env.find_project_root(path)
@@ -126,13 +184,31 @@ return {
 
                     return root
                 end,
+
                 before_init = function(_, config)
-                    apply_pyright_python(config, config.root_dir)
+                    apply_python_path(config, config.root_dir)
                 end,
+
                 on_new_config = function(new_config, root_dir)
-                    apply_pyright_python(new_config, root_dir)
+                    apply_python_path(new_config, root_dir)
                 end,
+
                 settings = {
+                    basedpyright = {
+                        analysis = {
+                            autoImportCompletions = true,
+                            autoSearchPaths = true,
+                            diagnosticMode = "openFilesOnly",
+                            useLibraryCodeForTypes = true,
+                            inlayHints = {
+                                variableTypes = true,
+                                callArgumentNames = true,
+                                callArgumentNamesMatching = false,
+                                functionReturnTypes = true,
+                                genericTypes = true,
+                            },
+                        },
+                    },
                     python = {
                         analysis = {
                             autoImportCompletions = true,
@@ -141,12 +217,11 @@ return {
                             useLibraryCodeForTypes = true,
                         },
                     },
-                    pyright = {
-                        disableOrganizeImports = false,
-                    },
                 },
             },
+
             ruff = {},
+
             jsonls = {
                 settings = {
                     json = {
@@ -155,7 +230,9 @@ return {
                     },
                 },
             },
+
             sqlls = {},
+
             omnisharp = {
                 enable_editorconfig_support = true,
                 enable_roslyn_analyzers = true,
@@ -168,7 +245,11 @@ return {
                     if client.server_capabilities.semanticTokensProvider
                         and client.server_capabilities.semanticTokensProvider.full
                     then
-                        local augroup = vim.api.nvim_create_augroup(string.format("OmniSharpSemanticTokens:%d", bufnr), { clear = true })
+                        local augroup = vim.api.nvim_create_augroup(
+                            string.format("OmniSharpSemanticTokens:%d", bufnr),
+                            { clear = true }
+                        )
+
                         vim.api.nvim_create_autocmd("TextChanged", {
                             group = augroup,
                             buffer = bufnr,
@@ -185,9 +266,12 @@ return {
                     end
                 end,
             },
+
             ts_ls = {
                 settings = {
-                    completions = { completeFunctionCalls = true },
+                    completions = {
+                        completeFunctionCalls = true,
+                    },
                 },
                 on_attach = function(client)
                     client.server_capabilities.documentFormattingProvider = false
@@ -201,6 +285,22 @@ return {
                     existing_attach(client, bufnr)
                 end
 
+                lsp_signature.on_attach({
+                    bind = true,
+                    floating_window = true,
+                    floating_window_above_cur_line = false,
+                    hint_enable = false,
+                    handler_opts = {
+                        border = "rounded",
+                    },
+                    max_height = 12,
+                    max_width = 100,
+                    doc_lines = 10,
+                    padding = " ",
+                    transparency = nil,
+                    toggle_key = "<M-x>",
+                }, bufnr)
+
                 local map = function(mode, lhs, rhs, desc)
                     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
                 end
@@ -211,6 +311,7 @@ return {
                 map("n", "gr", vim.lsp.buf.references, "Go to References")
                 map("n", "K", vim.lsp.buf.hover, "Hover")
                 map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
+                map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
                 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
                 map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
                 map("n", "<leader>f", function()
@@ -232,7 +333,7 @@ return {
         local ensure = {
             "lua_ls",
             "rust_analyzer",
-            "pyright",
+            "basedpyright",
             "jsonls",
             "sqlls",
             "omnisharp",

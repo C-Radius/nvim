@@ -22,41 +22,63 @@ return {
         require("luasnip.loaders.from_vscode").lazy_load()
 
         cmp.setup({
+            completion = {
+                completeopt = "menu,menuone,noinsert",
+            },
+
             snippet = {
                 expand = function(args)
                     luasnip.lsp_expand(args.body)
                 end,
             },
 
-            mapping = {
+            window = {
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
+            },
+
+            experimental = {
+                ghost_text = true,
+            },
+
+            mapping = cmp.mapping.preset.insert({
                 ["<CR>"] = cmp.mapping.confirm({ select = true }),
                 ["<C-Space>"] = cmp.mapping.complete(),
                 ["<C-e>"] = cmp.mapping.abort(),
                 ["<C-n>"] = cmp.mapping.select_next_item(),
                 ["<C-p>"] = cmp.mapping.select_prev_item(),
+                ["<Down>"] = cmp.mapping.select_next_item(),
+                ["<Up>"] = cmp.mapping.select_prev_item(),
+                ["<C-f>"] = cmp.mapping.scroll_docs(4),
+                ["<C-b>"] = cmp.mapping.scroll_docs(-4),
 
                 ["<Tab>"] = cmp.mapping(function(fallback)
-                    if luasnip.jumpable(1) then
-                        luasnip.jump(1)
+                    if cmp.visible() then
+                        cmp.select_next_item()
+                    elseif luasnip.expand_or_jumpable() then
+                        luasnip.expand_or_jump()
                     else
                         fallback()
                     end
                 end, { "i", "s" }),
 
                 ["<S-Tab>"] = cmp.mapping(function(fallback)
-                    if luasnip.jumpable(-1) then
+                    if cmp.visible() then
+                        cmp.select_prev_item()
+                    elseif luasnip.jumpable(-1) then
                         luasnip.jump(-1)
                     else
                         fallback()
                     end
                 end, { "i", "s" }),
-            },
+            }),
 
             sources = cmp.config.sources({
                 { name = "nvim_lsp" },
+                { name = "nvim_lsp_signature_help" },
                 { name = "luasnip" },
-                { name = "buffer" },
                 { name = "path" },
+                { name = "buffer" },
             }),
 
             formatting = {
@@ -65,32 +87,31 @@ return {
                     local kind_icons = {
                         Text = " Text",
                         Method = " Method",
-                        Function = " Function",
-                        Constructor = " Ctor",
+                        Function = "󰊕 Function",
+                        Constructor = " Constructor",
                         Field = " Field",
-                        Variable = " Var",
+                        Variable = " Variable",
                         Class = " Class",
-                        Interface = " Trait", -- override
-                        Module = " Mod",
-                        Property = " Prop",
+                        Interface = "󰠱 Interface",
+                        Module = " Module",
+                        Property = " Property",
                         Unit = " Unit",
-                        Value = " Val",
+                        Value = " Value",
                         Enum = " Enum",
-                        Keyword = " Kw",
-                        Snippet = " Snip",
+                        Keyword = " Keyword",
+                        Snippet = " Snippet",
                         Color = " Color",
                         File = " File",
-                        Reference = " Ref",
-                        Folder = " Dir",
-                        EnumMember = " Emem",
-                        Constant = " Const",
-                        Struct = " Struct",
-                        Event = " Ev",
-                        Operator = " Op",
+                        Reference = " Reference",
+                        Folder = " Folder",
+                        EnumMember = " EnumMember",
+                        Constant = " Constant",
+                        Struct = "󰙅 Struct",
+                        Event = " Event",
+                        Operator = " Operator",
                         TypeParameter = " Type",
                     }
 
-                    -- Rename "Interface" to "Trait" (for rust-analyzer)
                     if vim_item.kind == "Interface" then
                         vim_item.kind = "Trait"
                     end
@@ -99,15 +120,33 @@ return {
 
                     local menu_icon = {
                         nvim_lsp = "[LSP]",
-                        luasnip  = "[Snip]",
-                        buffer   = "[Buf]",
-                        path     = "[Path]",
+                        nvim_lsp_signature_help = "[Sig]",
+                        luasnip = "[Snip]",
+                        buffer = "[Buf]",
+                        path = "[Path]",
                     }
-                    vim_item.menu = menu_icon[entry.source.name] or entry.source.name
+
+                    vim_item.menu = menu_icon[entry.source.name] or ("[" .. entry.source.name .. "]")
 
                     return vim_item
                 end,
             },
+        })
+
+        cmp.setup.cmdline("/", {
+            mapping = cmp.mapping.preset.cmdline(),
+            sources = {
+                { name = "buffer" },
+            },
+        })
+
+        cmp.setup.cmdline(":", {
+            mapping = cmp.mapping.preset.cmdline(),
+            sources = cmp.config.sources({
+                { name = "path" },
+            }, {
+                { name = "cmdline" },
+            }),
         })
     end,
 }

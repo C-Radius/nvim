@@ -30,9 +30,11 @@ keymap("t", "<M-k>", [[<C-\><C-n><C-w>k]], opts)
 keymap("t", "<M-j>", [[<C-\><C-n><C-w>j]], opts)
 keymap("t", "<Esc>", [[<C-\><C-n>]], opts)
 
--- Buffer nav
-keymap("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
-keymap("n", "<leader>bp", ":bprev<CR>", { desc = "Previous buffer" })
+-- Buffer navigation
+keymap("n", "bn", ":bnext<CR>", { silent = true, desc = "Next buffer" })
+keymap("n", "bp", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
+keymap("n", "<leader>bn", ":bnext<CR>", { silent = true, desc = "Next buffer" })
+keymap("n", "<leader>bp", ":bprevious<CR>", { silent = true, desc = "Previous buffer" })
 
 -- Diagnostics
 keymap("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostics (float)" })
@@ -40,5 +42,5 @@ keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic"
 keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open location list with diagnostics" })
 
--- Keybinding to move inside lsp doc pop up and in general to move to next split
+-- Window cycling
 keymap("n", "<leader>w", "<C-w>w", {})
