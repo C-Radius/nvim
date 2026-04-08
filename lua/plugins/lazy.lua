@@ -15,7 +15,7 @@ require("lazy").setup({
     require("plugins.which-key"),
     require("plugins.treesitter"),
     require("plugins.rainbow-delimiters"),
-    require("plugins.neotree"),
+    require("plugins.oil"),
     require("plugins.undotree"),
     require("plugins.toggleterm"),
     require("plugins.mini-surround"),

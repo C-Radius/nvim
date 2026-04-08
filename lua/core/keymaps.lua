@@ -42,4 +42,3 @@ keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open location list
 
 -- Keybinding to move inside lsp doc pop up and in general to move to next split
 keymap("n", "<leader>w", "<C-w>w", {})
-

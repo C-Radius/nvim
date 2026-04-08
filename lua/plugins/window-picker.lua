@@ -27,7 +27,7 @@ return {
                 include_current_win = false,
                 include_unfocusable_windows = false,
                 bo = {
-                    filetype = { "NvimTree", "neo-tree", "notify", "snacks_notif" },
+                    filetype = { "NvimTree", "neo-tree", "oil", "notify", "snacks_notif" },
                     buftype = { "terminal" },
                 },
                 wo = {},

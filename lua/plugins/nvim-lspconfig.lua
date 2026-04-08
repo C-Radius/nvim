@@ -25,27 +25,6 @@ return {
         local capabilities = require("cmp_nvim_lsp").default_capabilities()
         local omnisharp_extended = require("omnisharp_extended")
         local python_env = require("utils.python_env")
-        local mason_bin = vim.fn.stdpath("data") .. "/mason/bin/"
-        local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
-
-        local function mason_executable(name)
-            local candidates
-
-            if is_windows then
-                candidates = { name .. ".CMD", name .. ".cmd", name .. ".exe", name }
-            else
-                candidates = { name, name .. ".cmd", name .. ".CMD" }
-            end
-
-            for _, candidate in ipairs(candidates) do
-                local path = mason_bin .. candidate
-                if vim.fn.executable(path) == 1 then
-                    return path
-                end
-            end
-
-            return mason_bin .. (is_windows and (name .. ".CMD") or name)
-        end
 
         _G.inlay_hints_enabled = true
 
@@ -93,7 +72,6 @@ return {
 
         local server_opts = {
             lua_ls = {
-                cmd = { mason_executable("lua-language-server") },
                 settings = {
                     Lua = {
                         completion = { callSnippet = "Replace" },
@@ -102,7 +80,6 @@ return {
                 },
             },
             rust_analyzer = {
-                cmd = { mason_executable("rust-analyzer") },
                 settings = {
                     ["rust-analyzer"] = {
                         completion = {
@@ -259,11 +236,12 @@ return {
             "sqlls",
             "omnisharp",
             "ruff",
+            "ts_ls",
         }
 
         mason_lspconfig.setup({
             ensure_installed = ensure,
-            automatic_installation = false,
+            automatic_enable = true,
         })
 
         local has_handlers = type(mason_lspconfig.setup_handlers) == "function"
@@ -288,15 +266,6 @@ return {
                 vim.lsp.config(server, opts)
                 vim.lsp.enable(server)
             end
-        end
-
-        if server_opts.ts_ls then
-            local opts = server_opts.ts_ls
-            opts.capabilities = vim.tbl_deep_extend("force", {}, capabilities, opts.capabilities or {})
-            opts.on_attach = with_on_attach("ts_ls", opts.on_attach)
-
-            vim.lsp.config("ts_ls", opts)
-            vim.lsp.enable("ts_ls")
         end
 
         vim.api.nvim_create_autocmd("LspAttach", {

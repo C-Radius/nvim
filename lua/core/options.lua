@@ -60,8 +60,10 @@ vim.opt.fillchars:append({
     verthoriz = "┼",
 })
 
--- Use the system clipboard as the default register
-if vim.fn.has("clipboard") == 1 then
+-- Use the system clipboard as the default register when it is actually available.
+if vim.fn.has("win32") == 1 then
+    vim.opt.clipboard = "unnamedplus"
+elseif vim.fn.executable("wl-copy") == 1 or vim.fn.executable("xclip") == 1 then
     vim.opt.clipboard = "unnamedplus"
 end
 
