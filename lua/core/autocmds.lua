@@ -70,9 +70,6 @@ vim.api.nvim_create_autocmd("VimEnter", {
 
 vim.api.nvim_create_autocmd("BufReadPost", {
     callback = function()
-        if vim.fn.line("$") == 1 and vim.fn.getline(1) == "" and vim.bo.filetype == "" then
-            vim.cmd("edit!")
-        end
         vim.cmd("redraw!")
     end,
 })
