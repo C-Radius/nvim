@@ -1,13 +1,26 @@
 return {
     "stevearc/oil.nvim",
-    lazy = false,
+    cmd = { "Oil" },
+    keys = {
+        { "-", "<CMD>Oil<CR>", desc = "Open parent directory" },
+        {
+            "<leader>n",
+            function()
+                local oil = require("oil")
+                if vim.bo.filetype == "oil" then
+                    vim.cmd("close")
+                    return
+                end
+                oil.open_float()
+            end,
+            desc = "Toggle Oil explorer",
+        },
+    },
     dependencies = {
         "nvim-tree/nvim-web-devicons",
     },
     config = function()
-        local oil = require("oil")
-
-        oil.setup({
+        require("oil").setup({
             default_file_explorer = true,
             columns = {
                 "icon",
@@ -43,17 +56,5 @@ return {
             },
             use_default_keymaps = true,
         })
-
-        local function toggle_oil_float()
-            if vim.bo.filetype == "oil" then
-                vim.cmd("close")
-                return
-            end
-
-            oil.open_float()
-        end
-
-        vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
-        vim.keymap.set("n", "<leader>n", toggle_oil_float, { desc = "Toggle Oil explorer" })
     end,
 }

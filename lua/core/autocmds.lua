@@ -1,11 +1,37 @@
 -- Relativenumber toggle
 local group = vim.api.nvim_create_augroup("numbertoggle", { clear = true })
 
+local excluded_buftypes = {
+    terminal = true,
+    prompt = true,
+    nofile = true,
+    quickfix = true,
+    help = true,
+}
+
+local excluded_filetypes = {
+    oil = true,
+    help = true,
+    qf = true,
+    notify = true,
+    snacks_notif = true,
+    dashboard = true,
+    alpha = true,
+}
+
+local function should_manage_relativenumber()
+    local buftype = vim.bo.buftype
+    local filetype = vim.bo.filetype
+    return not excluded_buftypes[buftype] and not excluded_filetypes[filetype]
+end
+
 vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "InsertLeave" }, {
     group = group,
     pattern = "*",
     callback = function()
-        vim.opt_local.relativenumber = true
+        if should_manage_relativenumber() then
+            vim.opt_local.relativenumber = true
+        end
     end,
 })
 
@@ -13,7 +39,9 @@ vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost", "InsertEnter" }, {
     group = group,
     pattern = "*",
     callback = function()
-        vim.opt_local.relativenumber = false
+        if should_manage_relativenumber() then
+            vim.opt_local.relativenumber = false
+        end
     end,
 })
 

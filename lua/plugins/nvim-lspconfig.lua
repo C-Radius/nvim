@@ -26,7 +26,7 @@ return {
         local omnisharp_extended = require("omnisharp_extended")
         local python_env = require("utils.python_env")
 
-        _G.inlay_hints_enabled = true
+        local inlay_hints_enabled = true
 
         local function apply_pyright_python(config, root_dir)
             config.settings = config.settings or {}
@@ -167,7 +167,7 @@ return {
                     if client.server_capabilities.semanticTokensProvider
                         and client.server_capabilities.semanticTokensProvider.full
                     then
-                        local augroup = vim.api.nvim_create_augroup("SemanticTokens", {})
+                        local augroup = vim.api.nvim_create_augroup(string.format("OmniSharpSemanticTokens:%d", bufnr), { clear = true })
                         vim.api.nvim_create_autocmd("TextChanged", {
                             group = augroup,
                             buffer = bufnr,
@@ -271,7 +271,7 @@ return {
         vim.api.nvim_create_autocmd("LspAttach", {
             callback = function(args)
                 local client = vim.lsp.get_client_by_id(args.data.client_id)
-                if client and client.server_capabilities.inlayHintProvider and _G.inlay_hints_enabled then
+                if client and client.server_capabilities.inlayHintProvider and inlay_hints_enabled then
                     vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
                 end
             end,
@@ -279,15 +279,15 @@ return {
 
         vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI", "InsertLeave" }, {
             callback = function()
-                if _G.inlay_hints_enabled then
+                if inlay_hints_enabled then
                     vim.lsp.inlay_hint.enable(true)
                 end
             end,
         })
 
         vim.keymap.set("n", "<leader>th", function()
-            _G.inlay_hints_enabled = not _G.inlay_hints_enabled
-            vim.lsp.inlay_hint.enable(_G.inlay_hints_enabled)
+            inlay_hints_enabled = not inlay_hints_enabled
+            vim.lsp.inlay_hint.enable(inlay_hints_enabled)
         end, { desc = "Toggle Inlay Hints" })
     end,
 }

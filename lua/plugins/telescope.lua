@@ -19,7 +19,6 @@ return {
     config = function()
         local telescope = require("telescope")
         local builtin = require("telescope.builtin")
-        local oil = require("oil")
 
         local function check_dependency(cmd, name, url)
             if vim.fn.executable(cmd) ~= 1 then
@@ -113,7 +112,7 @@ return {
             if telescope.extensions.oil then
                 telescope.extensions.oil.oil({})
             else
-                oil.open_float()
+                vim.cmd("Oil --float")
             end
         end, { desc = "Telescope directories in Oil" })
         vim.keymap.set("n", "<leader>p", function()

@@ -31,8 +31,8 @@ keymap("t", "<M-j>", [[<C-\><C-n><C-w>j]], opts)
 keymap("t", "<Esc>", [[<C-\><C-n>]], opts)
 
 -- Buffer nav
-keymap("n", "bn", ":bnext<CR>", {})
-keymap("n", "bp", ":bprev<CR>", {})
+keymap("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
+keymap("n", "<leader>bp", ":bprev<CR>", { desc = "Previous buffer" })
 
 -- Diagnostics
 keymap("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostics (float)" })
