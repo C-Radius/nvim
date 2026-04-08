@@ -42,3 +42,12 @@ keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open location list
 
 -- Keybinding to move inside lsp doc pop up and in general to move to next split
 keymap("n", "<leader>w", "<C-w>w", {})
+
+-- Always paste from system clipboard with plain p / P
+-- Normal mode
+keymap("n", "p", '"+p', { noremap = true, silent = true, desc = "Paste from system clipboard" })
+keymap("n", "P", '"+P', { noremap = true, silent = true, desc = "Paste before from system clipboard" })
+
+-- Visual mode
+keymap("x", "p", '"+P', { noremap = true, silent = true, desc = "Replace selection with system clipboard" })
+keymap("x", "P", '"+P', { noremap = true, silent = true, desc = "Replace selection with system clipboard" })

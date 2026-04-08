@@ -1,7 +1,7 @@
 return {
     "glebzlat/arduino-nvim",
-    config = {
-        function() require("arduino-nvim").setup() end,
-        filetype = "arduino",
-    }
+    ft = "arduino",
+    config = function()
+        require("arduino-nvim").setup()
+    end,
 }

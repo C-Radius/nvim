@@ -5,161 +5,29 @@ return {
     config = function()
         local iron = require("iron.core")
         local view = require("iron.view")
+        local python_env = require("utils.python_env")
 
-        local sep = package.config:sub(1, 1)
-        local root_markers = {
-            "pyproject.toml",
-            "pyrightconfig.json",
-            "setup.py",
-            "setup.cfg",
-            "requirements.txt",
-            "Pipfile",
-            "tox.ini",
-            ".git",
-            ".venv",
-            "venv",
-        }
-
-        local function normalize(path)
-            return path and vim.fs.normalize(path) or nil
+        local function system_ok(cmd)
+            local result = vim.system(cmd, { text = true }):wait()
+            return result.code == 0
         end
 
-        local function is_directory(path)
-            return path and vim.fn.isdirectory(path) == 1
-        end
+        local function python_repl_command(meta)
+            local bufname = vim.api.nvim_buf_get_name(meta.current_bufnr)
+            local python = python_env.preferred_python(bufname)
 
-        local function join_path(...)
-            return table.concat({ ... }, sep)
-        end
-
-        local function resolve_path_input(path_or_bufnr)
-            if type(path_or_bufnr) == "number" then
-                local ok, name = pcall(vim.api.nvim_buf_get_name, path_or_bufnr)
-                if ok then
-                    path_or_bufnr = name
-                else
-                    path_or_bufnr = nil
-                end
+            if python and system_ok({ python, "-c", "import IPython" }) then
+                return { python, "-m", "IPython", "--no-autoindent" }
             end
 
-            if type(path_or_bufnr) ~= "string" then
-                return nil
-            end
-
-            if path_or_bufnr == "" then
-                return nil
-            end
-
-            return normalize(path_or_bufnr)
-        end
-
-        local function find_project_root(start_path)
-            start_path = resolve_path_input(start_path)
-            if not start_path then
-                return nil
-            end
-
-            local start_dir = start_path
-            if vim.fn.isdirectory(start_dir) == 0 then
-                start_dir = vim.fs.dirname(start_dir)
-            end
-
-            local matches = vim.fs.find(root_markers, {
-                path = start_dir,
-                upward = true,
-                limit = 1,
-            })
-
-            if #matches == 0 then
-                return nil
-            end
-
-            return normalize(vim.fs.dirname(matches[1]))
-        end
-
-        local function find_local_venv(start_path, root_dir)
-            start_path = resolve_path_input(start_path)
-            if not start_path then
-                return nil
-            end
-
-            local current = start_path
-            if vim.fn.isdirectory(current) == 0 then
-                current = vim.fs.dirname(current)
-            end
-
-            current = normalize(current)
-            root_dir = normalize(root_dir)
-
-            while current do
-                for _, name in ipairs({ ".venv", "venv" }) do
-                    local candidate = normalize(join_path(current, name))
-                    if is_directory(candidate) then
-                        return candidate
-                    end
-                end
-
-                if current == root_dir then
-                    break
-                end
-
-                local parent = normalize(vim.fs.dirname(current))
-                if not parent or parent == current then
-                    break
-                end
-                current = parent
-            end
-
-            return nil
-        end
-
-        local function python_from_venv(venv_dir)
-            local candidates = {
-                join_path(venv_dir, "Scripts", "python.exe"),
-                join_path(venv_dir, "bin", "python"),
-            }
-
-            for _, candidate in ipairs(candidates) do
-                if vim.fn.executable(candidate) == 1 then
-                    return candidate
-                end
-            end
-
-            return nil
-        end
-
-        local function resolve_python(start_path)
-            local root_dir = find_project_root(start_path)
-            local local_venv = find_local_venv(start_path, root_dir)
-
-            if local_venv then
-                local python = python_from_venv(local_venv)
-                if python then
-                    return python
-                end
-            end
-
-            if vim.fn.executable("python") == 1 then
-                return "python"
-            end
-            if vim.fn.executable("py") == 1 then
-                return "py"
-            end
-            if vim.fn.executable("python3") == 1 then
-                return "python3"
-            end
-
-            return "python"
+            return { python, "-i" }
         end
 
         iron.setup({
             config = {
                 repl_definition = {
                     python = {
-                        command = function(meta)
-                            local bufname = vim.api.nvim_buf_get_name(meta.current_bufnr)
-                            return { resolve_python(bufname), "-m", "IPython" }
-                        end,
+                        command = python_repl_command,
                     },
                     lua = {
                         command = { "lua" },
@@ -169,7 +37,7 @@ return {
                     },
                 },
                 repl_open_cmd = view.split.vertical.botright(0.4),
-                close_window_on_exit = true,
+                close_window_on_exit = false,
             },
             highlight = {
                 italic = true,

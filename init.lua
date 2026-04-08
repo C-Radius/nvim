@@ -5,7 +5,7 @@
 --  \____|    |_| \_\__,_|\__,_|_|\__,_|___/
 --
 -- Author: C-Radius
--- Last Mod: 17/05/2025
+-- Last Mod: 08/04/2026
 -- Bootstrap lazy.nvim
 
 -----------------------------------------------------------------------------------------------------------
@@ -15,7 +15,6 @@
 local target_major = 0
 local target_minor = 12
 
--- Get current version table: { major, minor, patch }
 local actual = vim.version()
 local actual_version = ("%d.%d.%d"):format(actual.major, actual.minor, actual.patch)
 
@@ -34,9 +33,8 @@ end
 
 -- Neovim version
 -- This section is for neovide settings
---Set neovide cursor trails
 vim.g.neovide_cursor_vfx_mode = "pixiedust"
--- Set neovide fonts
+
 if vim.g.neovide then
     vim.opt.guifont = "FiraCode Nerd Font:h10"
 end
@@ -44,7 +42,7 @@ end
 -- First of all make sure lazy is installed, if not, install it
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 
----@diagnostic disable-next-line: undefined-field --This dcorator silences a warning about fs_stat not existing. It does on runtime.
+---@diagnostic disable-next-line: undefined-field
 if not vim.loop.fs_stat(lazypath) then
     print("Installing lazy.nvim...")
     vim.fn.system({
@@ -52,7 +50,7 @@ if not vim.loop.fs_stat(lazypath) then
         "clone",
         "--filter=blob:none",
         "https://github.com/folke/lazy.nvim.git",
-        "--branch=stable", -- latest stable release
+        "--branch=stable",
         lazypath,
     })
 end
@@ -60,21 +58,9 @@ end
 -- Add lazy.nvim to runtime path
 vim.opt.rtp:prepend(lazypath)
 
-
--- Decide which shell to use on Windows.
--- Use cmd.exe here because PowerShell broke external command resolution in this setup.
-if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
-    vim.opt.shell = "cmd.exe"
-    vim.opt.shellcmdflag = "/c"
-    vim.opt.shellquote = ""
-    vim.opt.shellxquote = ""
-end
-
-
 -- Environment variables
 vim.g.polyglot_disabled = { "markdown" }
 
--- This is the main configuration file for Neovim, which loads all the necessary modules and plugins.
 require("core.options")
 require("core.keymaps")
 require("core.autocmds")

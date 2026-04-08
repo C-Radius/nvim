@@ -1,20 +1,15 @@
 -- Plugin setup
 require("lazy").setup({
-    require("plugins.notify"), -- Has to be first because ... breaking changes all the fucking time
-    -- Plain plugins
-    { "olimorris/onedarkpro.nvim" },
+    require("plugins.notify"),
+
+    -- Base dependencies / standalone plugins
     { "nvim-lua/plenary.nvim" },
     { "jssee/vim-delight" },
     { "b0o/schemastore.nvim" },
-    { "folke/neodev.nvim" },
-    {
-        "lukas-reineke/indent-blankline.nvim",
-        main = "ibl",
-        opts = {},
-    },
+
     -- Configured plugins
-    require("plugins.comment-nvim"),
     require("plugins.onedarkpro"),
+    require("plugins.comment-nvim"),
     require("plugins.indent-blankline"),
     require("plugins.window-picker"),
     require("plugins.which-key"),
@@ -28,6 +23,7 @@ require("lazy").setup({
     require("plugins.fidget"),
     require("plugins.flash"),
     require("plugins.dressing"),
+    require("plugins.lazydev"),
     require("plugins.nvim-lspconfig"),
     require("plugins.conform"),
     require("plugins.nvim-cmp"),
@@ -35,11 +31,11 @@ require("lazy").setup({
     require("plugins.telescope"),
     require("plugins.nvim-autopairs"),
     require("plugins.aerial"),
-    require("plugins.neotest"), -- For running tests
+    require("plugins.neotest"),
     require("plugins.iron-nvim"),
-    require("plugins.lualine"), -- Keep this last to ensure everything is loaded before trying to show info about it.
     require("plugins.crates-nvim"),
     require("plugins.csvview"),
     require("plugins.arduino-nvim"),
     require("plugins.venv-selector"),
+    require("plugins.lualine"),
 })
