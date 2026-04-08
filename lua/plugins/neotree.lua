@@ -7,7 +7,6 @@ return {
         "MunifTanjim/nui.nvim",
         --{ "3rd/image.nvim", opts = {} },
         "s1n7ax/nvim-window-picker", -- for open_with_window_picker keymaps
-        version = "*",
     },
     lazy = false, -- neo-tree will lazily load itself
     opts = {

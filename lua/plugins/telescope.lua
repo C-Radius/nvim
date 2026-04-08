@@ -19,7 +19,17 @@ return {
         local telescope = require("telescope")
         local builtin = require("telescope.builtin")
 
-        local has_project_actions, project_actions = pcall(require, "telescope._extensions.project.actions")
+        local function get_project_actions()
+            local ok, actions = pcall(require, "telescope._extensions.project.actions")
+            if ok then
+                return actions
+            end
+
+            return nil
+        end
+
+        local project_actions = get_project_actions()
+        local has_project_actions = project_actions ~= nil
 
         local function check_dependency(cmd, name, url)
             if vim.fn.executable(cmd) ~= 1 then

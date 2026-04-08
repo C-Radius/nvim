@@ -4,13 +4,17 @@ local group = vim.api.nvim_create_augroup("numbertoggle", { clear = true })
 vim.api.nvim_create_autocmd({ "BufEnter", "FocusGained", "InsertLeave" }, {
     group = group,
     pattern = "*",
-    command = "set relativenumber",
+    callback = function()
+        vim.opt_local.relativenumber = true
+    end,
 })
 
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost", "InsertEnter" }, {
     group = group,
     pattern = "*",
-    command = "set norelativenumber",
+    callback = function()
+        vim.opt_local.relativenumber = false
+    end,
 })
 
 -- Rust helper mapping
@@ -70,7 +74,9 @@ vim.api.nvim_create_autocmd("VimEnter", {
 
 vim.api.nvim_create_autocmd("BufReadPost", {
     callback = function()
-        vim.cmd("redraw!")
+        vim.schedule(function()
+            vim.cmd("redraw")
+        end)
     end,
 })
 

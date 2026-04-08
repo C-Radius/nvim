@@ -26,6 +26,26 @@ return {
         local omnisharp_extended = require("omnisharp_extended")
         local python_env = require("utils.python_env")
         local mason_bin = vim.fn.stdpath("data") .. "/mason/bin/"
+        local is_windows = vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1
+
+        local function mason_executable(name)
+            local candidates
+
+            if is_windows then
+                candidates = { name .. ".CMD", name .. ".cmd", name .. ".exe", name }
+            else
+                candidates = { name, name .. ".cmd", name .. ".CMD" }
+            end
+
+            for _, candidate in ipairs(candidates) do
+                local path = mason_bin .. candidate
+                if vim.fn.executable(path) == 1 then
+                    return path
+                end
+            end
+
+            return mason_bin .. (is_windows and (name .. ".CMD") or name)
+        end
 
         _G.inlay_hints_enabled = true
 
@@ -73,7 +93,7 @@ return {
 
         local server_opts = {
             lua_ls = {
-                cmd = { mason_bin .. "lua-language-server.CMD" },
+                cmd = { mason_executable("lua-language-server") },
                 settings = {
                     Lua = {
                         completion = { callSnippet = "Replace" },
@@ -82,7 +102,7 @@ return {
                 },
             },
             rust_analyzer = {
-                cmd = { mason_bin .. "rust-analyzer.CMD" },
+                cmd = { mason_executable("rust-analyzer") },
                 settings = {
                     ["rust-analyzer"] = {
                         completion = {
