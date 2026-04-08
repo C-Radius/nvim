@@ -12,20 +12,19 @@
 -- Configuration target version
 -- Check if current nvim version is compatible with the version these config files were setup for.
 -----------------------------------------------------------------------------------------------------------
-local required_nvim_version = "0.11.3"
+local target_major = 0
+local target_minor = 12
 
 -- Get current version table: { major, minor, patch }
 local actual = vim.version()
 local actual_version = ("%d.%d.%d"):format(actual.major, actual.minor, actual.patch)
 
--- Compare version strings
-if actual_version ~= required_nvim_version then
+if actual.major ~= target_major or actual.minor ~= target_minor then
     vim.schedule(function()
         vim.notify(
             string.format(
-                "⚠️  Your Neovim version is %s — this config was built for %s.\nCompatibility issues may occur.",
-                actual_version,
-                required_nvim_version
+                "⚠️  Your Neovim version is %s — this config targets the 0.12.x line.\nCompatibility issues may occur.",
+                actual_version
             ),
             vim.log.levels.WARN
         )
@@ -62,11 +61,11 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 
---Decide which terminal to use if we're in windows.
---Powershell by default, but you can change it to cmd or bash if you want.
+-- Decide which shell to use on Windows.
+-- Use cmd.exe here because PowerShell broke external command resolution in this setup.
 if vim.fn.has("win32") == 1 or vim.fn.has("win64") == 1 then
-    vim.opt.shell = "powershell"
-    vim.opt.shellcmdflag = "-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command"
+    vim.opt.shell = "cmd.exe"
+    vim.opt.shellcmdflag = "/c"
     vim.opt.shellquote = ""
     vim.opt.shellxquote = ""
 end
