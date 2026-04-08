@@ -1,307 +1,356 @@
-# Neovim Configuration (C-Radius)
+# Neovim Configuration
 
-## Overview
+A fast, minimal, and structured Neovim setup focused on **navigation**, **filesystem editing**, and **native LSP**.
 
-This is a modular Neovim configuration targeting **Neovim 0.12.x**.
-
-The goal of this setup is:
-
-* Stability over time (minimal breakage on updates)
-* Predictable behavior (especially clipboard and shell)
-* Clean separation between core config and plugins
-* Easy debugging when something breaks
+This README is meant to be sufficient for anyone (including future you) to understand and use the setup without guessing.
 
 ---
 
-## Directory Structure
+# Core Philosophy
 
-```
-.
-├── init.lua
-├── lua/
-│   ├── core/
-│   │   ├── options.lua
-│   │   ├── keymaps.lua
-│   │   ├── autocmds.lua
-│   │
-│   └── plugins/
-│       ├── lazy.lua
-│       ├── telescope.lua
-│       ├── ...
-```
+This config is intentionally split into clear responsibilities:
 
-### Responsibilities
+* **Telescope** → *find things* (files, text, projects)
+* **Oil** → *change things* (rename, move, delete files)
+* **LSP (native Neovim)** → *understand things* (code intelligence)
 
-| File                | Purpose                                             |
-| ------------------- | --------------------------------------------------- |
-| `init.lua`          | Entry point, bootstraps lazy.nvim, loads everything |
-| `core/options.lua`  | All editor behavior (clipboard, UI, etc.)           |
-| `core/keymaps.lua`  | Keybindings only                                    |
-| `core/autocmds.lua` | Event-driven behavior                               |
-| `plugins/*.lua`     | Plugin definitions and setup                        |
+There is **no sidebar-based workflow**. Everything is buffer-driven.
 
 ---
 
-## Core Design Decisions
+# Installation
 
-### 1. Clipboard Behavior (IMPORTANT)
+## 1. Install Neovim
 
-We use:
-
-```lua
-vim.opt.clipboard = "unnamedplus"
-```
-
-This makes:
-
-* `yy`, `dd`, `p` use the **system clipboard**
-* No need for `"+y` or `"+p`
-
-#### Rules
-
-* DO NOT remap `p`, `y`, `d` unless absolutely necessary
-* If clipboard stops working → issue is **environment**, not config
-
-#### Linux requirement
-
-You MUST have one of:
-
-* `wl-clipboard` (Wayland)
-* `xclip` or `xsel` (X11)
-
----
-
-### 2. Shell Configuration (CRITICAL)
-
-We DO NOT override shell globally.
-
-❌ BAD:
-
-```lua
-vim.opt.shell = "cmd.exe"
-```
-
-This breaks:
-
-* plugin subprocess calls
-* quoting behavior
-* cross-platform compatibility
-
-#### Rule:
-
-If something needs a specific shell → fix it locally, NOT globally.
-
----
-
-### 3. Plugin Management (lazy.nvim)
-
-* Plugins are defined in `lua/plugins/`
-* Lazy handles install/update/locking
-
-#### Rules:
-
-* Avoid pinning to unstable branches (`master`)
-* Prefer stable or default versions
-* Avoid plugin internals (e.g. `_extensions`)
-
----
-
-### 4. Telescope Philosophy
-
-Telescope is used heavily, so:
-
-#### Constraints:
-
-* Must not crash if extensions fail
-* Must work without optional dependencies
-
-#### Decisions:
-
-* `fzf-native` only loads if `make` exists
-* All extensions loaded with `pcall`
-* Project extension guarded (no hard dependency)
-
----
-
-### 5. Version Targeting
-
-Config targets:
+Required version:
 
 ```
 Neovim 0.12.x
 ```
 
-If using a different version:
-
-* Expect breakage
-* You will get a warning on startup
-
 ---
 
-## Known Fragile Areas
+## 2. Install dependencies
 
-These are things that can break easily:
+### Windows (using winget)
 
-### 1. Telescope Extensions
-
-* `telescope-fzf-native` → requires `make`
-* `telescope-project` → uses internal APIs sometimes
-
-### 2. Clipboard
-
-If broken:
-
-* Not a config issue
-* Check:
-
-  * provider availability
-  * terminal support
-  * OS clipboard tools
-
-### 3. Autocommands
-
-File:
+Install everything with:
 
 ```
-core/autocmds.lua
-```
-
-This block is suspicious:
-
-```lua
-BufReadPost → edit! + redraw!
-```
-
-Potential issues:
-
-* unexpected reloads
-* buffer flickering
-* weird file state
-
-If something feels “random” → check here first.
-
----
-
-## Dependency Requirements
-
-### Required (for full functionality)
-
-| Tool           | Purpose             |
-| -------------- | ------------------- |
-| `git`          | Plugin management   |
-| `ripgrep (rg)` | Telescope search    |
-| `fd`           | Faster file finding |
-
-### Optional
-
-| Tool            | Purpose                 |
-| --------------- | ----------------------- |
-| `make`          | Build fzf-native        |
-| clipboard tools | Linux clipboard support |
-
----
-
-## Debugging Strategy
-
-When something breaks:
-
-### Step 1 — Identify scope
-
-* Clipboard?
-* Telescope?
-* Plugin?
-* Keymap?
-
-### Step 2 — Eliminate config
-
-Run:
-
-```bash
-nvim --clean
-```
-
-If it works there → config issue
-
-### Step 3 — Check logs
-
-```vim
-:messages
-```
-
-### Step 4 — Check plugin load
-
-```vim
-:Lazy
+winget install Neovim.Neovim
+winget install Git.Git
+winget install BurntSushi.ripgrep.MSVC
+winget install sharkdp.fd
+winget install OpenJS.NodeJS
+winget install Python.Python.3
 ```
 
 ---
 
-## Rules for Future Edits
+### Linux (APT – Debian/Ubuntu)
 
-### DO:
-
-* Keep logic inside the correct file (options vs keymaps vs plugins)
-* Use `pcall` for optional dependencies
-* Prefer explicit over “magic behavior”
-
-### DO NOT:
-
-* Add global hacks (like forcing shell)
-* Use plugin internals unless unavoidable
-* Delay core options with `vim.schedule`
-
----
-
-## Common Tasks
-
-### Add a plugin
-
-* Add file in `lua/plugins/`
-* Restart → Lazy installs automatically
-
-### Update plugins
-
-```vim
-:Lazy update
+```
+sudo apt update
+sudo apt install neovim git ripgrep fd-find nodejs npm python3 python3-pip
 ```
 
-### Fix clipboard
+👉 Note: On Ubuntu/Debian, `fd` is installed as `fdfind`
 
-* Verify `clipboard=unnamedplus`
-* Verify system provider exists
+Fix:
 
----
-
-## Philosophy Summary
-
-This config prioritizes:
-
-1. **Predictability**
-2. **Minimal hidden behavior**
-3. **Controlled plugin usage**
-4. **Cross-platform compatibility**
-
-If something feels “random”, it's a bug.
+```
+sudo ln -s $(which fdfind) ~/.local/bin/fd
+```
 
 ---
 
-## Future Improvements (optional)
+### Linux (Pacman – Arch)
 
-* Remove fragile autocmd behavior
-* Add health check command
-* Add plugin loading profiling
-* Add fallback configs for missing dependencies
+```
+sudo pacman -S neovim git ripgrep fd nodejs npm python python-pip
+```
 
 ---
 
-## Final Note
+## 3. Install config
 
-If something breaks:
+### Windows
 
-* It is either:
+```
+C:\Users\<your-user>\AppData\Local\nvim
+```
 
-  * environment
-  * plugin update
-  * bad override
+### Linux/macOS
 
-It is almost never “Neovim being weird”.
+```
+~/.config/nvim
+```
+
+Place the config files there.
+
+---
+
+## 4. Install plugins
+
+Open Neovim and run:
+
+```
+:Lazy sync
+```
+
+---
+
+# Keybindings
+
+## Telescope (Navigation)
+
+| Key          | Action                |
+| ------------ | --------------------- |
+| `<leader>ff` | Find files            |
+| `<leader>fg` | Live grep             |
+| `<leader>fo` | Open directory in Oil |
+
+---
+
+## Oil (Filesystem)
+
+| Key         | Action                        |
+| ----------- | ----------------------------- |
+| `-`         | Open current file's directory |
+| `<leader>n` | Open Oil (floating explorer)  |
+
+---
+
+## Buffers
+
+| Key          | Action          |
+| ------------ | --------------- |
+| `<leader>bn` | Next buffer     |
+| `<leader>bp` | Previous buffer |
+
+---
+
+# Oil (Filesystem Editing)
+
+## Mental Model
+
+Oil = **filesystem as a text buffer**
+
+You are not clicking files.
+You are editing a list of files.
+
+---
+
+## Navigation inside Oil
+
+| Key     | Action                      |
+| ------- | --------------------------- |
+| `j / k` | Move                        |
+| `<CR>`  | Open file / enter directory |
+| `-`     | Go to parent directory      |
+| `g.`    | Toggle hidden files         |
+
+---
+
+## File Operations
+
+### Rename
+
+Edit the filename:
+
+```
+old.txt → new.txt
+```
+
+Then:
+
+```
+:w
+```
+
+---
+
+### Move file
+
+```
+file.txt → folder/file.txt
+```
+
+Then:
+
+```
+:w
+```
+
+---
+
+### Delete file
+
+```
+dd
+:w
+```
+
+---
+
+### Create file
+
+```
+newfile.txt
+:w
+```
+
+---
+
+### Create folder
+
+```
+folder_name/
+:w
+```
+
+---
+
+## Undo
+
+```
+u
+```
+
+---
+
+## Important Rule
+
+Nothing happens until:
+
+```
+:w
+```
+
+---
+
+# Workflow
+
+### 1. Find file
+
+```
+<leader>ff
+```
+
+### 2. Open file
+
+```
+<CR>
+```
+
+### 3. Open its folder
+
+```
+-
+```
+
+### 4. Modify with Oil
+
+---
+
+# LSP (Language Server)
+
+Uses **native Neovim LSP (modern style)**.
+
+---
+
+## DO NOT use:
+
+```
+:LspInfo
+```
+
+---
+
+## Use instead:
+
+### Check status
+
+```
+:checkhealth vim.lsp
+```
+
+### Check active clients
+
+```
+:lua print(vim.inspect(vim.lsp.get_clients({ bufnr = 0 })))
+```
+
+---
+
+## LSP servers
+
+Managed via Mason.
+
+Examples:
+
+* Python → pyright, ruff
+* JSON → jsonls
+
+---
+
+# Telescope Details
+
+* `ripgrep` → required for searching
+* `fd` → used for fast file finding
+
+If `fd` is missing:
+
+* file search still works
+* but slower
+
+---
+
+# Clipboard
+
+```
+vim.opt.clipboard = "unnamedplus"
+```
+
+### Linux requirement:
+
+```
+sudo apt install xclip
+```
+
+or
+
+```
+sudo pacman -S wl-clipboard
+```
+
+---
+
+# Notes
+
+* Neo-tree removed → replaced by Oil
+* No sidebar file explorer
+* Fully cross-platform
+* Minimal and predictable
+
+---
+
+# Summary
+
+* Telescope → find
+* Oil → modify
+* LSP → understand
+
+---
+
+# Final Advice
+
+If something feels wrong, you're probably using it like a traditional file explorer.
+
+Don't.
+
+Think:
+
+* navigation → Telescope
+* editing → Oil
+
