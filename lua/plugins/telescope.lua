@@ -26,8 +26,7 @@ return {
                 vim.schedule(function()
                     vim.notify(
                         string.format(
-                            "[Telescope] Missing dependency: %s
-Download: %s",
+                            "[Telescope] Missing dependency: %s\nDownload: %s",
                             name,
                             url
                         ),
