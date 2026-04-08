@@ -1,7 +1,17 @@
 return {
     "Vigemus/iron.nvim",
     ft = { "python", "lua", "rust" },
-    event = "VeryLazy",
+    cmd = { "IronRepl", "IronRestart", "IronFocus", "IronHide", "IronWatch" },
+    keys = {
+        { "<space>ir", desc = "Start REPL" },
+        { "<space>is", desc = "Restart REPL" },
+        { "<space>iq", desc = "Close REPL" },
+        { "<space>sl", desc = "Send line" },
+        { "<space>sf", desc = "Send file" },
+        { "<space>sc", mode = "v", desc = "Send selection" },
+        { "<space>sq", desc = "Quit REPL" },
+        { "<space>si", desc = "Interrupt REPL" },
+    },
     config = function()
         local iron = require("iron.core")
         local view = require("iron.view")

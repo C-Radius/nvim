@@ -31,6 +31,21 @@ if actual.major ~= target_major or actual.minor ~= target_minor then
 end
 ----------------------------------------------------------------------------------------------------------
 
+
+----------------------------------------------------------------------------------------------------------
+-- Making sure neovim finds fd.exe and rg.exe through winget links instead of inside neovim's bin directory.
+----------------------------------------------------------------------------------------------------------
+
+local winget_links = vim.fn.expand("~") .. "\\AppData\\Local\\Microsoft\\WinGet\\Links"
+if not vim.env.PATH:lower():find(winget_links:lower(), 1, true) then
+    vim.env.PATH = winget_links .. ";" .. vim.env.PATH
+else
+    vim.env.PATH = winget_links .. ";" .. vim.env.PATH:gsub(vim.pesc(winget_links) .. ";?", "")
+end
+----------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------
 -- Neovim version
 -- This section is for neovide settings
 vim.g.neovide_cursor_vfx_mode = "pixiedust"
@@ -65,3 +80,5 @@ require("core.options")
 require("core.keymaps")
 require("core.autocmds")
 require("plugins.lazy")
+
+----------------------------------------------------------------------------------------------------------

@@ -113,3 +113,110 @@ vim.api.nvim_create_autocmd("TextYankPost", {
         vim.highlight.on_yank({ timeout = 150 })
     end,
 })
+
+
+-- Project root tracking for Oil / Neogit / Telescope
+local root_group = vim.api.nvim_create_augroup("project_root_tracking", { clear = true })
+
+local root_markers = {
+    ".git",
+    "Cargo.toml",
+    "pyproject.toml",
+    "pyrightconfig.json",
+    "setup.py",
+    "setup.cfg",
+    "requirements.txt",
+    "Pipfile",
+    ".python-version",
+    "package.json",
+    "tsconfig.json",
+    "go.mod",
+    "Makefile",
+    "CMakeLists.txt",
+    ".sln",
+    ".stylua.toml",
+    "stylua.toml",
+}
+
+local function valid_normal_file(bufnr)
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name == "" then
+        return false
+    end
+    if vim.bo[bufnr].buftype ~= "" then
+        return false
+    end
+    if vim.fn.filereadable(name) ~= 1 and vim.fn.isdirectory(name) ~= 1 then
+        return false
+    end
+    return true
+end
+
+local function detect_project_root(bufnr)
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name == "" then
+        return nil
+    end
+
+    local clients = vim.lsp.get_clients({ bufnr = bufnr })
+    for _, client in ipairs(clients) do
+        local root_dir = client.config and client.config.root_dir
+        if type(root_dir) == "string" and root_dir ~= "" and vim.fn.isdirectory(root_dir) == 1 then
+            return root_dir
+        end
+    end
+
+    local start_dir = name
+    if vim.fn.isdirectory(start_dir) == 0 then
+        start_dir = vim.fs.dirname(start_dir)
+    end
+
+    local match = vim.fs.find(root_markers, {
+        upward = true,
+        path = start_dir,
+        stop = vim.loop.os_homedir(),
+        limit = 1,
+    })[1]
+
+    if match then
+        return vim.fs.dirname(match)
+    end
+
+    if vim.fn.isdirectory(start_dir) == 1 then
+        return start_dir
+    end
+
+    return nil
+end
+
+local function maybe_set_project_root(bufnr)
+    if not valid_normal_file(bufnr) then
+        return
+    end
+
+    local root = detect_project_root(bufnr)
+    if not root or vim.fn.isdirectory(root) ~= 1 then
+        return
+    end
+
+    local current = vim.fn.getcwd()
+    if vim.fs.normalize(current) == vim.fs.normalize(root) then
+        return
+    end
+
+    vim.cmd.cd(vim.fn.fnameescape(root))
+end
+
+vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter" }, {
+    group = root_group,
+    callback = function(args)
+        maybe_set_project_root(args.buf)
+    end,
+})
+
+vim.api.nvim_create_autocmd("LspAttach", {
+    group = root_group,
+    callback = function(args)
+        maybe_set_project_root(args.buf)
+    end,
+})
