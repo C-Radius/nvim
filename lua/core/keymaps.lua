@@ -38,9 +38,30 @@ keymap("n", "<leader>bp", ":bprevious<CR>", { silent = true, desc = "Previous bu
 
 -- Diagnostics
 keymap("n", "<leader>e", vim.diagnostic.open_float, { desc = "Show diagnostics (float)" })
-keymap("n", "[d", vim.diagnostic.goto_prev, { desc = "Go to previous diagnostic" })
-keymap("n", "]d", vim.diagnostic.goto_next, { desc = "Go to next diagnostic" })
+keymap("n", "[d", function()
+    vim.diagnostic.jump({ count = -1 })
+end, { desc = "Go to previous diagnostic" })
+
+keymap("n", "]d", function()
+    vim.diagnostic.jump({ count = 1 })
+end, { desc = "Go to next diagnostic" })
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open location list with diagnostics" })
 
 -- Window cycling
 keymap("n", "<leader>w", "<C-w>w", {})
+
+
+--python runner
+local python_runner = require("utils.python_runner")
+
+vim.keymap.set("n", "<leader>rr", python_runner.run_in_terminal_split, {
+    desc = "Run current Python module in terminal split",
+})
+
+vim.keymap.set("n", "<leader>rd", python_runner.run_detached, {
+    desc = "Run current Python module detached",
+})
+
+vim.keymap.set("n", "<leader>ri", python_runner.show_run_info, {
+    desc = "Show Python run info",
+})

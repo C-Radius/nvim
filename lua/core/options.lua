@@ -87,3 +87,14 @@ vim.diagnostic.config({
         },
     },
 })
+
+
+-- Show tabs/trailing characters etc
+vim.opt.list = true
+vim.opt.listchars = {
+    tab = "»·",
+    trail = "·",
+    nbsp = "␣",
+    extends = "→",
+    precedes = "←",
+}

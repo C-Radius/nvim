@@ -42,5 +42,5 @@ require("lazy").setup({
     require("plugins.csvview"),
     require("plugins.arduino-nvim"),
     require("plugins.venv-selector"),
-    require("plugins.lualine"),
+    require("plugins.lualine")
 })
