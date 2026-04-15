@@ -26,7 +26,7 @@ return {
             opts = {
                 bind = true,
                 floating_window = true,
-                floating_window_above_cur_line = false,
+                floating_window_above_cur_line = true,
                 hint_enable = false,
                 handler_opts = {
                     border = "rounded",
@@ -49,18 +49,7 @@ return {
         local lsp_signature = require("lsp_signature")
 
         local inlay_hints_enabled = true
-
-        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-            border = "rounded",
-            max_width = 100,
-            max_height = 30,
-        })
-
-        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-            border = "rounded",
-            max_width = 100,
-            max_height = 20,
-        })
+        vim.o.winborder = "rounded"
 
         local function apply_python_path(config, root_dir)
             config.settings = config.settings or {}
@@ -196,6 +185,7 @@ return {
                 settings = {
                     basedpyright = {
                         analysis = {
+                            typeCheckingMode = "standard",
                             autoImportCompletions = true,
                             autoSearchPaths = true,
                             diagnosticMode = "openFilesOnly",
@@ -207,14 +197,6 @@ return {
                                 functionReturnTypes = true,
                                 genericTypes = true,
                             },
-                        },
-                    },
-                    python = {
-                        analysis = {
-                            autoImportCompletions = true,
-                            autoSearchPaths = true,
-                            diagnosticMode = "workspace",
-                            useLibraryCodeForTypes = true,
                         },
                     },
                 },
@@ -288,7 +270,7 @@ return {
                 lsp_signature.on_attach({
                     bind = true,
                     floating_window = true,
-                    floating_window_above_cur_line = false,
+                    floating_window_above_cur_line = true,
                     hint_enable = false,
                     handler_opts = {
                         border = "rounded",
@@ -309,9 +291,24 @@ return {
                 map("n", "gD", vim.lsp.buf.declaration, "Go to Declaration")
                 map("n", "gi", vim.lsp.buf.implementation, "Go to Implementation")
                 map("n", "gr", vim.lsp.buf.references, "Go to References")
-                map("n", "K", vim.lsp.buf.hover, "Hover")
-                map("n", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
-                map("i", "<C-k>", vim.lsp.buf.signature_help, "Signature Help")
+                map("n", "K", function()
+                    vim.lsp.buf.hover({
+                        max_width = 100,
+                        max_height = 30,
+                    })
+                end, "Hover")
+                map("n", "<C-k>", function()
+                    vim.lsp.buf.signature_help({
+                        max_width = 100,
+                        max_height = 20,
+                    })
+                end, "Signature Help")
+                map("i", "<C-k>", function()
+                    vim.lsp.buf.signature_help({
+                        max_width = 100,
+                        max_height = 20,
+                    })
+                end, "Signature Help")
                 map("n", "<leader>rn", vim.lsp.buf.rename, "Rename")
                 map("n", "<leader>ca", vim.lsp.buf.code_action, "Code Action")
                 map("n", "<leader>f", function()
@@ -323,7 +320,10 @@ return {
                     map("n", "<leader>rf", function()
                         vim.lsp.buf.code_action({
                             apply = true,
-                            context = { only = { "source.fixAll" } },
+                            context = {
+                                only = { "source.fixAll" },
+                                diagnostics = {},
+                            },
                         })
                     end, "Ruff: Fix all")
                 end

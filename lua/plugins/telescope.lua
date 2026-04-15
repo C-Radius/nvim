@@ -207,6 +207,11 @@ return {
 
         telescope.setup({
             defaults = {
+                file_ignore_patterns = {
+                    "^%.git/",
+                    "^.git/",
+                    ".*/%.git/.*",
+                },
                 find_command = find_command,
                 vimgrep_arguments = vimgrep_arguments,
             },
