@@ -29,6 +29,64 @@ This structure is meant to keep plugin behavior isolated and debuggable.
 
 ---
 
+## NvChad UI layer
+
+This configuration uses NvChad's UI and Base46 projects as a standalone
+presentation layer. It does not import NvChad's editor framework, LSP setup,
+formatting defaults, keymaps, file explorer, or terminal behavior.
+
+Included UI features:
+
+- Base46 themes and theme picker
+- NvChad statusline
+- tab-scoped buffer/tab line
+- NvDash start screen
+- NvCheatsheet
+- coordinated highlights for Telescope, completion, diagnostics, Git, Trouble,
+  Flash, notifications, Rainbow Delimiters, and Diffview
+
+UI bindings:
+
+- `<leader>ut` — choose a theme
+- `<leader>uc` — open the keymap cheatsheet
+- `<leader>ud` — toggle NvDash
+
+The leader key remains comma, so `<leader>ut` is `,ut`.
+
+### Reverting the UI experiment
+
+The untouched pre-NvChad configuration is preserved on:
+
+```text
+codex/pre-nvchad-ui
+```
+
+The NvChad UI work lives on:
+
+```text
+codex/nvchad-ui-merge
+```
+
+To restore the original configuration:
+
+```powershell
+git switch codex/pre-nvchad-ui
+nvim --headless "+Lazy! sync" +qa
+```
+
+To return to the NvChad UI version:
+
+```powershell
+git switch main
+nvim --headless "+Lazy! sync" +qa
+```
+
+Run these commands from the active Neovim configuration directory. The
+`Lazy! sync` step aligns installed plugins with whichever configuration is
+currently selected.
+
+---
+
 ## Installation
 
 Place the config in:

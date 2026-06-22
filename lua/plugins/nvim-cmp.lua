@@ -17,6 +17,7 @@ return {
     config = function()
         local cmp = require("cmp")
         local luasnip = require("luasnip")
+        local nvchad_cmp = require("nvchad.cmp")
 
         -- Load vscode-style snippets
         require("luasnip.loaders.from_vscode").lazy_load()
@@ -33,8 +34,8 @@ return {
             },
 
             window = {
-                completion = cmp.config.window.bordered(),
-                documentation = cmp.config.window.bordered(),
+                completion = nvchad_cmp.window.completion,
+                documentation = nvchad_cmp.window.documentation,
             },
 
             experimental = {

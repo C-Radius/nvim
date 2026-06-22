@@ -1,5 +1,6 @@
 -- Plugin setup
 require("lazy").setup({
+    require("plugins.nvchad-ui"),
     require("plugins.notify"),
 
     -- Base dependencies / standalone plugins
@@ -8,7 +9,6 @@ require("lazy").setup({
     { "b0o/schemastore.nvim" },
 
     -- Configured plugins
-    require("plugins.onedarkpro"),
     require("plugins.comment-nvim"),
     require("plugins.indent-blankline"),
     require("plugins.window-picker"),
@@ -19,7 +19,6 @@ require("lazy").setup({
     require("plugins.undotree"),
     require("plugins.toggleterm"),
     require("plugins.mini-surround"),
-    require("plugins.dashboard-nvim"),
     require("plugins.fidget"),
     require("plugins.flash"),
     require("plugins.dressing"),
@@ -29,6 +28,7 @@ require("lazy").setup({
     require("plugins.trouble"),
     require("plugins.harpoon"),
     require("plugins.neogit"),
+    require("plugins.gitsigns"),
     require("plugins.nvim-jqx"),
     require("plugins.vim-dadbod-ui"),
     require("plugins.nvim-cmp"),
@@ -42,7 +42,6 @@ require("lazy").setup({
     require("plugins.csvview"),
     require("plugins.arduino-nvim"),
     require("plugins.venv-selector"),
-    require("plugins.lualine"),
     require("plugins.codex")
 
 })

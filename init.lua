@@ -73,6 +73,10 @@ end
 -- Add lazy.nvim to runtime path
 vim.opt.rtp:prepend(lazypath)
 
+-- NvChad's UI and Base46 are used as a standalone presentation layer.
+-- The rest of this configuration remains locally owned.
+vim.g.base46_cache = vim.fn.stdpath("data") .. "/base46/"
+
 -- Environment variables
 vim.g.polyglot_disabled = { "markdown" }
 
@@ -80,5 +84,18 @@ require("core.options")
 require("core.keymaps")
 require("core.autocmds")
 require("plugins.lazy")
+
+-- Base46 compiles plugin highlights into small cache files. Loading all of
+-- them up front lets the theme cover both eager and lazy-loaded plugins.
+if vim.uv.fs_stat(vim.g.base46_cache) then
+    for _, cache_file in ipairs(vim.fn.readdir(vim.g.base46_cache)) do
+        dofile(vim.g.base46_cache .. cache_file)
+    end
+
+    vim.api.nvim_exec_autocmds("User", {
+        pattern = "NvThemeReload",
+        modeline = false,
+    })
+end
 
 ----------------------------------------------------------------------------------------------------------

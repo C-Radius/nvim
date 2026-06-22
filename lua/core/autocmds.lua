@@ -87,6 +87,11 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     callback = set_custom_ui,
 })
 
+vim.api.nvim_create_autocmd("User", {
+    pattern = "NvThemeReload",
+    callback = set_custom_ui,
+})
+
 set_custom_ui()
 
 vim.api.nvim_create_autocmd("VimEnter", {

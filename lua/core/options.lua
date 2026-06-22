@@ -11,16 +11,23 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.showmatch = true
 vim.opt.guicursor = ""
-vim.opt.winbar = "%=%m %f"
+vim.opt.winbar = ""
 vim.opt.laststatus = 3
+vim.opt.showmode = false
+vim.opt.cursorline = true
+vim.opt.cursorlineopt = "number"
+vim.opt.numberwidth = 2
+vim.opt.ruler = false
 
 vim.opt.backup = false
 vim.opt.writebackup = false
 vim.opt.swapfile = false
+vim.opt.undofile = true
 vim.opt.backspace = { "indent", "eol", "start" }
 vim.opt.path:append("**")
 vim.opt.mouse = "a"
 vim.opt.ttimeoutlen = 50
+vim.opt.timeoutlen = 400
 
 vim.opt.incsearch = true
 vim.opt.hlsearch = true
@@ -39,6 +46,7 @@ vim.opt.joinspaces = false
 
 vim.opt.splitright = true
 vim.opt.splitbelow = true
+vim.opt.splitkeep = "screen"
 
 vim.opt.scrolljump = 5
 vim.opt.scrolloff = 3
@@ -51,6 +59,7 @@ vim.opt.iminsert = 0
 vim.opt.imsearch = -1
 
 vim.opt.fillchars:append({
+    eob = " ",
     vert = "│",
     horiz = "─",
     horizup = "┴",
