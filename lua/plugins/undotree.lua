@@ -14,16 +14,6 @@ return {
                 width = 30,
 
             },
-            keymaps = {
-                move_next = "j",
-                move_prev = "k",
-                move2parent = "gj",
-                move_change_next = "J",
-                move_change_prev = "K",
-                action_enter = "<cr>",
-                enter_diffbuf = "p",
-                quit = "q",
-            },
             mappings = {
                 ["<C-n>"] = "<C-w>h",
                 ["<C-p>"] = "<C-w>l",
